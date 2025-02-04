@@ -1,45 +1,51 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 public class BasicChannelService implements ChannelService {
-    private final ChannelRepository repository;
+    private final ChannelRepository channelRepository;
 
-    public BasicChannelService(ChannelRepository repository) {
-        this.repository = repository;
+    public BasicChannelService(ChannelRepository channelRepository) {
+        this.channelRepository = channelRepository;
     }
 
     @Override
-    public void createChannel(Channel channel) {
-        repository.save(channel);
-        System.out.println("[Channel Created]: " + channel);
+    public Channel create(ChannelType type, String name, String description) {
+        Channel channel = new Channel(type, name, description);
+        return channelRepository.save(channel);
     }
 
     @Override
-    public Optional<Channel> getChannel(UUID id) {
-        return repository.findById(id);
+    public Channel find(UUID channelId) {
+        return channelRepository.findById(channelId)
+                        .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
     }
 
     @Override
-    public List<Channel> getAllChannels() {
-        return repository.findAll();
+    public List<Channel> findAll() {
+        return channelRepository.findAll();
     }
 
     @Override
-    public void updateChannel(Channel channel) {
-        repository.save(channel);
-        System.out.println("[Channel Updated]: " + channel);
+    public Channel update(UUID channelId, String newName, String newDescription) {
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NoSuchElementException("Channel with id " + channelId + " not found"));
+        channel.update(newName, newDescription);
+        return channelRepository.save(channel);
     }
 
     @Override
-    public void deleteChannel(UUID id) {
-        repository.delete(id);
-        System.out.println("[Channel Deleted]");
+    public void delete(UUID channelId) {
+        if (!channelRepository.existsById(channelId)) {
+            throw new NoSuchElementException("Channel with id " + channelId + " not found");
+        }
+        channelRepository.deleteById(channelId);
     }
 }

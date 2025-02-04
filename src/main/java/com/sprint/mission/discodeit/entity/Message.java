@@ -1,44 +1,63 @@
 package com.sprint.mission.discodeit.entity;
 
-import java.io.Serial;
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.UUID;
 
-public class Message extends BaseEntity {
-    @Serial
+public class Message implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    private UUID id;
+    private Long createdAt;
+    private Long updatedAt;
+    //
     private String content;
-    private final UUID userId;
-    private final UUID channelId;
+    //
+    private UUID channelId;
+    private UUID authorId;
 
-    public Message(UUID id, String content, UUID userId, UUID channelId) {
-        super();
-        this.id = id;
+    public Message(String content, UUID channelId, UUID authorId) {
+        this.id = UUID.randomUUID();
+        this.createdAt = Instant.now().getEpochSecond();
+        //
         this.content = content;
-        this.userId = userId;
         this.channelId = channelId;
+        this.authorId = authorId;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public Long getCreatedAt() {
+        return createdAt;
+    }
+
+    public Long getUpdatedAt() {
+        return updatedAt;
     }
 
     public String getContent() {
         return content;
     }
 
-    public void setContent(String content) {
-        this.content = content;
-        update();
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
     public UUID getChannelId() {
         return channelId;
     }
 
-    @Override
-    public String toString() {
-        return "Message{id=" + id + ", content='" + content + '\'' + ", userId=" + userId + ", channelId=" + channelId + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + '}';
+    public UUID getAuthorId() {
+        return authorId;
+    }
+
+    public void update(String newContent) {
+        boolean anyValueUpdated = false;
+        if (newContent != null && !newContent.equals(this.content)) {
+            this.content = newContent;
+            anyValueUpdated = true;
+        }
+
+        if (anyValueUpdated) {
+            this.updatedAt = Instant.now().getEpochSecond();
+        }
     }
 }

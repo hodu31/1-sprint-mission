@@ -1,57 +1,53 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.entity.*;
+import com.sprint.mission.discodeit.entity.Channel;
+import com.sprint.mission.discodeit.entity.ChannelType;
+import com.sprint.mission.discodeit.entity.Message;
+import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.repository.jcf.*;
-import com.sprint.mission.discodeit.repository.file.*;
-import com.sprint.mission.discodeit.service.basic.*;
-import com.sprint.mission.discodeit.service.*;
-
-import java.util.*;
+import com.sprint.mission.discodeit.repository.file.FileChannelRepository;
+import com.sprint.mission.discodeit.repository.file.FileMessageRepository;
+import com.sprint.mission.discodeit.repository.file.FileUserRepository;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
+import com.sprint.mission.discodeit.service.UserService;
+import com.sprint.mission.discodeit.service.basic.BasicChannelService;
+import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.basic.BasicUserService;
 
 public class JavaApplication {
-    public static void main(String[] args) {
-
-        ChannelRepository jcfChannelRepo = new JCFChannelRepository();
-        UserRepository jcfUserRepo = new JCFUserRepository();
-        MessageRepository jcfMessageRepo = new JCFMessageRepository();
-
-        ChannelRepository fileChannelRepo = new FileChannelRepository();
-        UserRepository fileUserRepo = new FileUserRepository();
-        MessageRepository fileMessageRepo = new FileMessageRepository();
-
-        ChannelService jcfChannelService = new BasicChannelService(jcfChannelRepo);
-        UserService jcfUserService = new BasicUserService(jcfUserRepo);
-        MessageService jcfMessageService = new BasicMessageService(jcfMessageRepo);
-
-        ChannelService fileChannelService = new BasicChannelService(fileChannelRepo);
-        UserService fileUserService = new BasicUserService(fileUserRepo);
-        MessageService fileMessageService = new BasicMessageService(fileMessageRepo);
-
-        System.out.println("Testing JCF Repositories:");
-        testServices(jcfChannelService, jcfUserService, jcfMessageService);
-
-        System.out.println("\nTesting File Repositories:");
-        testServices(fileChannelService, fileUserService, fileMessageService);
+    static User setupUser(UserService userService) {
+        User user = userService.create("woody", "woody@codeit.com", "woody1234");
+        return user;
     }
 
-    private static void testServices(ChannelService channelService, UserService userService, MessageService messageService) {
+    static Channel setupChannel(ChannelService channelService) {
+        Channel channel = channelService.create(ChannelType.PUBLIC, "공지", "공지 채널입니다.");
+        return channel;
+    }
 
-        User user = new User(UUID.randomUUID(), "woody", "woody@codeit.com", "woody1234");
-        userService.createUser(user);
+    static void messageCreateTest(MessageService messageService, Channel channel, User author) {
+        Message message = messageService.create("안녕하세요.", channel.getId(), author.getId());
+        System.out.println("메시지 생성: " + message.getId());
+    }
 
-        Channel channel = new Channel(UUID.randomUUID(), ChannelType.PUBLIC, "공지", "공지 채널입니다.");
-        channelService.createChannel(channel);
+    public static void main(String[] args) {
+        // 레포지토리 초기화
+        UserRepository userRepository = new FileUserRepository();
+        ChannelRepository channelRepository = new FileChannelRepository();
+        MessageRepository messageRepository = new FileMessageRepository();
 
-        Message message = new Message(UUID.randomUUID(), "안녕하세요.", channel.getId(), user.getId());
-        messageService.createMessage(message);
+        // 서비스 초기화
+        UserService userService = new BasicUserService(userRepository);
+        ChannelService channelService = new BasicChannelService(channelRepository);
+        MessageService messageService = new BasicMessageService(messageRepository, channelRepository, userRepository);
 
-        System.out.println("All Users: " + userService.getAllUsers());
-
-        System.out.println("All Channels: " + channelService.getAllChannels());
-
-        System.out.println("All Messages: " + messageService.getAllMessages());
+        // 셋업
+        User user = setupUser(userService);
+        Channel channel = setupChannel(channelService);
+        // 테스트
+        messageCreateTest(messageService, channel, user);
     }
 }
