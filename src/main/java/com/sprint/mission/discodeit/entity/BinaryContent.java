@@ -9,8 +9,8 @@ public class BinaryContent implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final UUID id;
-    private final User user; // 사용자 객체 참조 (프로필 이미지)
-    private final Message message; // 메시지 객체 참조 (첨부 파일)
+    private final User user;
+    private final Message message;
     private final byte[] data;
     private final String mimeType;
 

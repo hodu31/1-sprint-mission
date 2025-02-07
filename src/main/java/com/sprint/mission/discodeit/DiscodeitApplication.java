@@ -21,14 +21,14 @@ public class DiscodeitApplication {
 		ChannelService channelService = context.getBean(ChannelService.class);
 		MessageService messageService = context.getBean(MessageService.class);
 
-		User user = setupUser(userService);
+//		User user = setupUser(userService);
 		Channel channel = setupChannel(channelService);
-		messageCreateTest(messageService, channel, user);
+//		messageCreateTest(messageService, channel, user);
 	}
-
-	static User setupUser(UserService userService) {
-		return userService.create("woody", "woody@codeit.com", "woody1234");
-	}
+//
+//	static User setupUser(UserService userService) {
+//		return userService.create("woody", "woody@codeit.com", "woody1234");
+//	}
 
 	static Channel setupChannel(ChannelService channelService) {
 		return channelService.create(ChannelType.PUBLIC, "공지", "공지 채널입니다.");

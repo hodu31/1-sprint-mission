@@ -9,7 +9,7 @@ public class UserStatus {
     private UUID id;
     private Instant createdAt;
     private Instant updatedAt;
-    private User user; // 사용자 객체 참조
+    private User user;
     private Instant lastSeenAt;
 
     public UserStatus(User user, Instant lastSeenAt) {

@@ -13,16 +13,16 @@ public class Message implements Serializable {
     private Instant createdAt;
     private Instant updatedAt;
     private String content;
-    private UUID channel; // 객체 참조 방식 유지
-    private UUID author; // 객체 참조 방식 유지
+    private UUID channelId;
+    private UUID authorId;
 
     public Message(String content, UUID channel, UUID author) {
         this.id = UUID.randomUUID();
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         this.content = content;
-        this.channel = channel;
-        this.author = author;
+        this.channelId = channel;
+        this.authorId = author;
     }
 
     public void update(String newContent) {

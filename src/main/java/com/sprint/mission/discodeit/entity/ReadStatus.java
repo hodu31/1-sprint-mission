@@ -9,8 +9,8 @@ public class ReadStatus {
     private UUID id;
     private Instant createdAt;
     private Instant updatedAt;
-    private User user;      // 사용자 객체 참조
-    private Channel channel; // 채널 객체 참조
+    private User user;
+    private Channel channel;
     private Instant lastReadAt;
 
     public ReadStatus(User user, Channel channel, Instant lastReadAt) {
