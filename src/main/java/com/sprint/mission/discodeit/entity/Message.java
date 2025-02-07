@@ -2,7 +2,6 @@ package com.sprint.mission.discodeit.entity;
 
 import lombok.Getter;
 
-import javax.sql.RowSet;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.UUID;

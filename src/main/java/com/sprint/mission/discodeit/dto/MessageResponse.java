@@ -1,13 +1,17 @@
 package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.entity.Message;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class MessageResponse {
     private UUID id;
     private UUID channelId;
@@ -15,7 +19,7 @@ public class MessageResponse {
     private String senderUsername;
     private String content;
     private Instant createdAt;
-    private List<UUID> attachments; // 첨부파일 URL 목록
+    private List<UUID> attachments;
 
     public MessageResponse(Message message, String senderUsername, List<UUID> attachments) {
         this.id = message.getId();

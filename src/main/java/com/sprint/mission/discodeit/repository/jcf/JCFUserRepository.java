@@ -2,9 +2,12 @@ package com.sprint.mission.discodeit.repository.jcf;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
+@Repository
 public class JCFUserRepository implements UserRepository {
     private final Map<UUID, User> data;
 
@@ -25,7 +28,7 @@ public class JCFUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        return this.data.values().stream().toList();
+        return new ArrayList<>(this.data.values());
     }
 
     @Override
@@ -34,7 +37,37 @@ public class JCFUserRepository implements UserRepository {
     }
 
     @Override
+    public boolean existsByUsername(String name) {
+        return this.data.values().stream().anyMatch(user -> user.getUsername().equals(name));
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return this.data.values().stream().anyMatch(user -> user.getEmail().equals(email));
+    }
+
+    @Override
     public void deleteById(UUID id) {
         this.data.remove(id);
+    }
+
+    @Override
+    public void delete(User user) {
+        this.data.remove(user.getId());
+    }
+
+    @Override
+    public Optional<User> findByUsername(String username) {
+        return this.data.values().stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst();
+    }
+
+    @Override
+    public List<User> findAllById(List<UUID> ids) {
+        return ids.stream()
+                .map(this.data::get)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 }

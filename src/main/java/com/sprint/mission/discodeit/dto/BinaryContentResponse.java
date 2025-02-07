@@ -1,11 +1,15 @@
 package com.sprint.mission.discodeit.dto;
 
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class BinaryContentResponse {
     private UUID id;
     private UUID userId;
