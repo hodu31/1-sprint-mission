@@ -13,7 +13,7 @@ public class ChannelResponse {
     private String name;
     private String type;
     private Instant lastMessageTime;
-    private List<String> participants;
+    private List<UUID> participants;
 
     public ChannelResponse(Channel channel, Instant lastMessageTime, List<UUID> participants) {
         this.id = channel.getId();

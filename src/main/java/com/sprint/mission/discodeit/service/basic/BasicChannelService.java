@@ -38,7 +38,7 @@ public class BasicChannelService implements ChannelService {
             throw new IllegalArgumentException("At least one user must be included.");
         }
 
-        Channel channel = new Channel(null, null, ChannelType.PRIVATE);
+        Channel channel = new Channel(ChannelType.PRIVATE, null, null);
         channel = channelRepository.save(channel);
 
         for (User user : users) {
@@ -46,12 +46,12 @@ public class BasicChannelService implements ChannelService {
             readStatusRepository.save(readStatus);
         }
 
-        return new ChannelResponse(channel, null, users.stream().map(User::getUsername).collect(Collectors.toList()));
+        return new ChannelResponse(channel, null, users.stream().map(User::getId).collect(Collectors.toList()));
     }
 
     @Override
     public ChannelResponse createPublicChannel(PublicChannelCreateRequest request) {
-        Channel channel = new Channel(request.getName(), request.getDescription(), ChannelType.PUBLIC);
+        Channel channel = new Channel(ChannelType.PUBLIC, request.getName(), request.getDescription());
         channel = channelRepository.save(channel);
         return new ChannelResponse(channel, null, null);
     }
