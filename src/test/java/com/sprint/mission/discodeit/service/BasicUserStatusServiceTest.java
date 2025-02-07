@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.basic.BasicUserStatusService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,11 +41,8 @@ class BasicUserStatusServiceTest {
 
     }
 
-
-
-
-
     @Test
+    @DisplayName("유저 생성 확인")
     void createUserStatus_Success() {
         // Given
         UserStatusCreateRequest request = new UserStatusCreateRequest(testUserId, Instant.now());
@@ -60,6 +58,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 생성 실패 유저 없음")
     void createUserStatus_Fail_UserNotFound() {
         // Given
         UserStatusCreateRequest request = new UserStatusCreateRequest(testUserId, Instant.now());
@@ -70,6 +69,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 생성 실패 이미 유저 존재")
     void createUserStatus_Fail_AlreadyExists() {
         // Given
         UserStatusCreateRequest request = new UserStatusCreateRequest(testUserId, Instant.now());
@@ -81,6 +81,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 조회 확인")
     void findUserStatus_Success() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
@@ -95,6 +96,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 조회 실패 유저 없음")
     void findUserStatus_Fail_UserNotFound() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.empty());
@@ -104,6 +106,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 조회 실패 없음")
     void findUserStatus_Fail_NotFound() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
@@ -114,6 +117,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 업데이트 확인")
     void updateUserStatus_Success() {
         // Given
         UserStatusUpdateByUserIdRequest request = new UserStatusUpdateByUserIdRequest(testUserId, Instant.now());
@@ -129,6 +133,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 업데이트 실패 유저 없음")
     void updateUserStatus_Fail_UserNotFound() {
         // Given
         UserStatusUpdateByUserIdRequest request = new UserStatusUpdateByUserIdRequest(testUserId, Instant.now());
@@ -139,6 +144,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 삭제 확인")
     void deleteUserStatus_Success() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
@@ -152,6 +158,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 삭제 실패 유저 없음")
     void deleteUserStatus_Fail_UserNotFound() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.empty());
@@ -161,6 +168,7 @@ class BasicUserStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저 상태 삭제 실패 없음")
     void deleteUserStatus_Fail_NotFound() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));

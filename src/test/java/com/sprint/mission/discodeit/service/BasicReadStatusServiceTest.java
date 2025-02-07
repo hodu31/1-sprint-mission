@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.basic.BasicReadStatusService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -52,6 +53,7 @@ class BasicReadStatusServiceTest {
 
 
     @Test
+    @DisplayName("읽기 상태 생성 확인")
     void createReadStatus_Success() {
         // Given
         ReadStatusCreateRequest request = new ReadStatusCreateRequest(testUserId, testChannelId, Instant.now());
@@ -69,6 +71,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 생성 실패 유저 없음")
     void createReadStatus_Fail_UserNotFound() {
         // Given
         ReadStatusCreateRequest request = new ReadStatusCreateRequest(testUserId, testChannelId, Instant.now());
@@ -79,6 +82,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 생성 실패 채널 없음")
     void createReadStatus_Fail_ChannelNotFound() {
         // Given
         ReadStatusCreateRequest request = new ReadStatusCreateRequest(testUserId, testChannelId, Instant.now());
@@ -90,6 +94,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 생성 실패 중복")
     void createReadStatus_Fail_Duplicate() {
         // Given
         ReadStatusCreateRequest request = new ReadStatusCreateRequest(testUserId, testChannelId, Instant.now());
@@ -102,6 +107,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 찾기 확인")
     void findReadStatus_Success() {
         // Given
         when(readStatusRepository.findById(testReadStatusId)).thenReturn(Optional.of(testReadStatus));
@@ -115,6 +121,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 찾기 실패 없음")
     void findReadStatus_Fail_NotFound() {
         // Given
         when(readStatusRepository.findById(testReadStatusId)).thenReturn(Optional.empty());
@@ -124,6 +131,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("유저id로 모든 읽기 상태 확인")
     void findAllReadStatusesByUserId_Success() {
         // Given
         List<ReadStatus> readStatuses = List.of(testReadStatus);
@@ -139,6 +147,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 업데이트 확인")
     void updateReadStatus_Success() {
         // Given
         ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(testReadStatusId, Instant.now());
@@ -153,6 +162,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 업데이트 실패 없음")
     void updateReadStatus_Fail_NotFound() {
         // Given
         ReadStatusUpdateRequest request = new ReadStatusUpdateRequest(testReadStatusId, Instant.now());
@@ -163,6 +173,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 삭제 확인")
     void deleteReadStatus_Success() {
         // Given
         when(readStatusRepository.existsById(testReadStatusId)).thenReturn(true);
@@ -175,6 +186,7 @@ class BasicReadStatusServiceTest {
     }
 
     @Test
+    @DisplayName("읽기 상태 삭제 없음")
     void deleteReadStatus_Fail_NotFound() {
         // Given
         when(readStatusRepository.existsById(testReadStatusId)).thenReturn(false);

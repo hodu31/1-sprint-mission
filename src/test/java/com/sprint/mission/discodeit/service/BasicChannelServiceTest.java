@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,6 +56,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("privateChannel 생성 확인")
     void createPrivateChannel_Success() {
         // Given
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(List.of(testUserId));
@@ -72,6 +74,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("privateChannel 생성 실패 사용자 X")
     void createPrivateChannel_Fail_NoUsers() {
         // Given
         PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(Collections.emptyList());
@@ -82,6 +85,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("publicChannel 생성 확인")
     void createPublicChannel_Success() {
         // Given
         PublicChannelCreateRequest request = new PublicChannelCreateRequest("Public Channel", "A public chat room");
@@ -96,6 +100,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("채널 찾기 확인")
     void findChannel_Success() {
         // Given
         when(channelRepository.findById(testPublicChannelId)).thenReturn(Optional.of(testPublicChannel));
@@ -110,6 +115,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("채널 찾기 실패 없음")
     void findChannel_Fail_NotFound() {
         // Given
         when(channelRepository.findById(testPublicChannelId)).thenReturn(Optional.empty());
@@ -119,6 +125,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("사용자 id로 모든 채널 찾기")
     void findAllChannelsByUserId_Success() {
         // Given
         when(channelRepository.findByType(ChannelType.PUBLIC)).thenReturn(List.of(testPublicChannel));
@@ -135,6 +142,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("채널 업데이트 확인")
     void updateChannel_Success() {
         // Given
         ChannelUpdateRequest request = new ChannelUpdateRequest(testPublicChannelId, "Updated Name", "Updated Desc");
@@ -150,6 +158,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("privatechannel 업데이트 실패")
     void updateChannel_Fail_PrivateChannel() {
         // Given
         ChannelUpdateRequest request = new ChannelUpdateRequest(testPrivateChannelId, "Updated Name", "Updated Desc");
@@ -160,6 +169,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("채널 삭제 확인")
     void deleteChannel_Success() {
         // Given
         when(channelRepository.findById(testPublicChannelId)).thenReturn(Optional.of(testPublicChannel));
@@ -174,6 +184,7 @@ class BasicChannelServiceTest {
     }
 
     @Test
+    @DisplayName("채널 삭제 실패 없음")
     void deleteChannel_Fail_NotFound() {
         // Given
         when(channelRepository.findById(testPublicChannelId)).thenReturn(Optional.empty());

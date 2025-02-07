@@ -11,6 +11,7 @@ import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.repository.UserStatusRepository;
 import com.sprint.mission.discodeit.service.basic.BasicUserService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -55,6 +56,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 생성 확인")
     void createUser_Success() {
         // Given
         UserCreateRequest request = new UserCreateRequest("testUser", "test@example.com", "password123", null);
@@ -75,6 +77,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 생성 실패 이름 중복")
     void createUser_Fail_DuplicateUsername() {
         // Given
         UserCreateRequest request = new UserCreateRequest("testUser", "test@example.com", "password123", null);
@@ -85,6 +88,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 생성 실패 이메일 중복")
     void createUser_Fail_DuplicateEmail() {
         // Given
         UserCreateRequest request = new UserCreateRequest("testUser", "test@example.com", "password123", null);
@@ -95,6 +99,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 찾기 확인")
     void findUser_Success() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
@@ -110,6 +115,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 찾기 실패 없음")
     void findUser_Fail_NotFound() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.empty());
@@ -119,6 +125,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("모든 유저 찾기 확인")
     void findAllUsers_Success() {
         // Given
         List<User> users = List.of(testUser);
@@ -135,6 +142,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 업데이트 확인")
     void updateUser_Success() {
         // Given
         UserUpdateRequest request = new UserUpdateRequest("updatedUser", "updated@example.com", "newPassword", null);
@@ -152,6 +160,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 업데이트 실패 없음")
     void updateUser_Fail_NotFound() {
         // Given
         UserUpdateRequest request = new UserUpdateRequest("updatedUser", "updated@example.com", "newPassword", null);
@@ -162,6 +171,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 삭제 확인")
     void deleteUser_Success() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.of(testUser));
@@ -176,6 +186,7 @@ class BasicUserServiceTest {
     }
 
     @Test
+    @DisplayName("유저 삭제 없음")
     void deleteUser_Fail_NotFound() {
         // Given
         when(userRepository.findById(testUserId)).thenReturn(Optional.empty());

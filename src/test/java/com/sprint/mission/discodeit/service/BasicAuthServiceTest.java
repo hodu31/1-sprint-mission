@@ -6,6 +6,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicAuthService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,6 +36,7 @@ class BasicAuthServiceTest {
     }
 
     @Test
+    @DisplayName("로그인 기능 확인")
     void login_Success() {
         // Given
         LoginRequest request = new LoginRequest("testUser", "password123");
@@ -52,6 +54,7 @@ class BasicAuthServiceTest {
     }
 
     @Test
+    @DisplayName("로그인 실패 이름 중복")
     void login_Fail_InvalidUsername() {
         // Given
         LoginRequest request = new LoginRequest("wrongUser", "password123");
@@ -65,6 +68,7 @@ class BasicAuthServiceTest {
     }
 
     @Test
+    @DisplayName("로그인 실패 비밀번호 중복")
     void login_Fail_InvalidPassword() {
         // Given
         LoginRequest request = new LoginRequest("testUser", "wrongPassword");

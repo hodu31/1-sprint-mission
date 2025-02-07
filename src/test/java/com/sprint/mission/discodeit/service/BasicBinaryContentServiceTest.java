@@ -10,6 +10,7 @@ import com.sprint.mission.discodeit.repository.MessageRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicBinaryContentService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -60,6 +61,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary 생성 확인")
     void createBinaryContent_Success() throws IOException {
         // Given
         MultipartFile file = mock(MultipartFile.class);
@@ -82,6 +84,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary 생성 실패 사용자 X")
     void createBinaryContent_Fail_UserNotFound() {
         // Given
         MultipartFile file = mock(MultipartFile.class);
@@ -95,6 +98,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary 생성 실패 메시지 X")
     void createBinaryContent_Fail_MessageNotFound() {
         // Given
         MultipartFile file = mock(MultipartFile.class);
@@ -109,6 +113,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary조회 확인")
     void findBinaryContent_Success() {
         // Given
         when(binaryContentRepository.findById(testBinaryContentId)).thenReturn(Optional.of(testBinaryContent));
@@ -123,6 +128,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary 조회 실패 없음")
     void findBinaryContent_Fail_NotFound() {
         // Given
         when(binaryContentRepository.findById(testBinaryContentId)).thenReturn(Optional.empty());
@@ -132,6 +138,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary 모두 조회 확인")
     void findAllBinaryContents_Success() {
         // Given
         List<BinaryContent> binaryContents = List.of(testBinaryContent);
@@ -149,6 +156,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary 삭제 확인")
     void deleteBinaryContent_Success() {
         // Given
         when(binaryContentRepository.existsById(testBinaryContentId)).thenReturn(true);
@@ -161,6 +169,7 @@ class BasicBinaryContentServiceTest {
     }
 
     @Test
+    @DisplayName("Binary 삭제 없음")
     void deleteBinaryContent_Fail_NotFound() {
         // Given
         when(binaryContentRepository.existsById(testBinaryContentId)).thenReturn(false);

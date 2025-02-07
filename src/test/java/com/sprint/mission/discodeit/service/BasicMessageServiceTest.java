@@ -5,6 +5,7 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -56,6 +57,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("메시지 생성 확인")
     void createMessage_Success() {
         // Given
         MessageCreateRequest request = new MessageCreateRequest(testChannelId, testUserId, "Hello World!", null);
@@ -73,6 +75,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("메시지 생성 실패 채널 없음")
     void createMessage_Fail_ChannelNotFound() {
         // Given
         MessageCreateRequest request = new MessageCreateRequest(testChannelId, testUserId, "Hello World!", null);
@@ -83,6 +86,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("메시지 생성 실패 유저 없음")
     void createMessage_Fail_UserNotFound() {
         // Given
         MessageCreateRequest request = new MessageCreateRequest(testChannelId, testUserId, "Hello World!", null);
@@ -94,6 +98,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("채널id로 모든 메시지 찾기")
     void findAllMessagesByChannelId_Success() {
         // Given
         List<Message> messages = List.of(testMessage);
@@ -111,6 +116,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("메시지 업데이트 확인")
     void updateMessage_Success() {
         // Given
         MessageUpdateRequest request = new MessageUpdateRequest(testMessageId, "Updated Content");
@@ -126,6 +132,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("메시지 업데이트 실패 없음")
     void updateMessage_Fail_NotFound() {
         // Given
         MessageUpdateRequest request = new MessageUpdateRequest(testMessageId, "Updated Content");
@@ -136,6 +143,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("메시지 삭제 확인")
     void deleteMessage_Success() {
         // Given
         when(messageRepository.findById(testMessageId)).thenReturn(Optional.of(testMessage));
@@ -149,6 +157,7 @@ class BasicMessageServiceTest {
     }
 
     @Test
+    @DisplayName("메시지 삭제 실패 없음")
     void deleteMessage_Fail_NotFound() {
         // Given
         when(messageRepository.findById(testMessageId)).thenReturn(Optional.empty());
