@@ -1,17 +1,13 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.login;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserCreateRequest {
+public class LoginRequest {
     private String username;
-    private String email;
     private String password;
-    private MultipartFile profileImage;
-
 }

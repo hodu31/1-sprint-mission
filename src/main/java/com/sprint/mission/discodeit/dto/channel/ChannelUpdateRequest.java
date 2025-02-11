@@ -1,16 +1,16 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.channel;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReadStatusUpdateRequest {
+public class ChannelUpdateRequest {
     private UUID id;
-    private Instant lastReadAt;
+    private String name;
+    private String description;
 }

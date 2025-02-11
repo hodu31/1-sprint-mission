@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit.service;
 
-import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.channel.PrivateChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
@@ -59,7 +62,7 @@ class BasicChannelServiceTest {
     @DisplayName("privateChannel 생성 확인")
     void createPrivateChannel_Success() {
         // Given
-        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(List.of(testUserId));
+        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(List.of(testUserId), "testCh", "private channel");
         when(userRepository.findAllById(request.getUserIds())).thenReturn(List.of(testUser));
         when(channelRepository.save(any(Channel.class))).thenReturn(testPrivateChannel);
         doNothing().when(readStatusRepository).save(any(ReadStatus.class));
@@ -77,7 +80,7 @@ class BasicChannelServiceTest {
     @DisplayName("privateChannel 생성 실패 사용자 X")
     void createPrivateChannel_Fail_NoUsers() {
         // Given
-        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(Collections.emptyList());
+        PrivateChannelCreateRequest request = new PrivateChannelCreateRequest(Collections.emptyList(), "testCh", "private channel");
         when(userRepository.findAllById(request.getUserIds())).thenReturn(Collections.emptyList());
 
         // When & Then

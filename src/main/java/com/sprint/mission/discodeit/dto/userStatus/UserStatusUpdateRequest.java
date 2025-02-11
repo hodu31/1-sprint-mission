@@ -1,16 +1,16 @@
-package com.sprint.mission.discodeit.dto;
+package com.sprint.mission.discodeit.dto.userStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ChannelUpdateRequest {
+public class UserStatusUpdateRequest {
     private UUID id;
-    private String name;
-    private String description;
+    private Instant lastSeenAt;
 }

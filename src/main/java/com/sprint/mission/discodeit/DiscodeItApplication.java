@@ -1,6 +1,9 @@
 package com.sprint.mission.discodeit;
 
-import com.sprint.mission.discodeit.dto.*;
+import com.sprint.mission.discodeit.dto.channel.ChannelResponse;
+import com.sprint.mission.discodeit.dto.channel.PublicChannelCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
+import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
@@ -10,7 +13,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.time.Instant;
 import java.util.UUID;
 
 @SpringBootApplication
@@ -53,6 +55,7 @@ public class DiscodeItApplication implements CommandLineRunner {
 			MessageResponse messageResponse = basicMessageService.create(messageRequest);
 
 			System.out.println("메시지 생성 완료: " + messageResponse.getContent());
+
 
 		} catch (Exception e) {
 			System.err.println("애플리케이션 실행 중 오류 발생: " + e.getMessage());
