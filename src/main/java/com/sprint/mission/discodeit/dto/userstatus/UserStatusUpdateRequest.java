@@ -1,4 +1,4 @@
-package com.sprint.mission.discodeit.dto.readStatus;
+package com.sprint.mission.discodeit.dto.userstatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,8 +10,7 @@ import java.util.UUID;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReadStatusCreateRequest {
-    private UUID userId;
-    private UUID channelId;
-    private Instant lastReadAt;
+public class UserStatusUpdateRequest {
+    private UUID id;
+    private Instant lastSeenAt;
 }
