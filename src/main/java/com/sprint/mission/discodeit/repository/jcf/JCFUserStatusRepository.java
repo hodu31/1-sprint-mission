@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Repository
 public class JCFUserStatusRepository implements UserStatusRepository {
     private final Map<UUID, UserStatus> data;
 
