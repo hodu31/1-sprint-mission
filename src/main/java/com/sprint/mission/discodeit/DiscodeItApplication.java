@@ -6,8 +6,8 @@ import com.sprint.mission.discodeit.dto.message.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.message.MessageResponse;
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
-import com.sprint.mission.discodeit.service.basic.BasicChannelService;
-import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import com.sprint.mission.discodeit.service.ChannelService;
+import com.sprint.mission.discodeit.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -31,9 +31,8 @@ public class DiscodeItApplication implements CommandLineRunner {
 		System.out.println("=== DiscodeIt Application 시작 ===");
 
 		try {
-			// Spring Context에서 빈 가져오기
-			BasicChannelService basicChannelService = context.getBean(BasicChannelService.class);
-			BasicMessageService basicMessageService = context.getBean(BasicMessageService.class);
+			ChannelService channelService = context.getBean(ChannelService.class);
+			MessageService messageService = context.getBean(MessageService.class);
 			UserRepository userRepository = context.getBean(UserRepository.class);
 
 			// 1. 사용자 생성 및 저장
@@ -45,14 +44,14 @@ public class DiscodeItApplication implements CommandLineRunner {
 
 			// 2. 공용 채널 생성
 			PublicChannelCreateRequest publicChannelRequest = new PublicChannelCreateRequest("Public Channel", "A public chat room");
-			ChannelResponse publicChannel = basicChannelService.createPublicChannel(publicChannelRequest);
+			ChannelResponse publicChannel = channelService.createPublicChannel(publicChannelRequest);
 			UUID testChannelId = publicChannel.getId();
 
 			System.out.println("공용 채널 생성 완료: " + publicChannel.getId());
 
 			// 3. 메시지 생성
 			MessageCreateRequest messageRequest = new MessageCreateRequest(testChannelId, testUserId, "Hello World!", null);
-			MessageResponse messageResponse = basicMessageService.create(messageRequest);
+			MessageResponse messageResponse = messageService.create(messageRequest);
 
 			System.out.println("메시지 생성 완료: " + messageResponse.getContent());
 
