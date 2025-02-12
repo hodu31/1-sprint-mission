@@ -8,8 +8,6 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import com.sprint.mission.discodeit.service.MessageService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -17,17 +15,15 @@ import org.springframework.context.ConfigurableApplicationContext;
 import java.util.UUID;
 
 @SpringBootApplication
-public class DiscodeItApplication implements CommandLineRunner {
-
-	@Autowired
-	private ConfigurableApplicationContext context;
+public class DiscodeItApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(DiscodeItApplication.class, args);
+		ConfigurableApplicationContext context = SpringApplication.run(DiscodeItApplication.class, args);
+		runApplication(context);
+		context.close();
 	}
 
-	@Override
-	public void run(String... args) {
+	private static void runApplication(ConfigurableApplicationContext context) {
 		System.out.println("=== DiscodeIt Application 시작 ===");
 
 		try {
