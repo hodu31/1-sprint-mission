@@ -18,42 +18,35 @@ import java.util.UUID;
 public class DiscodeItApplication {
 
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(DiscodeItApplication.class, args);
-		runApplication(context);
-		context.close();
-	}
 
-	private static void runApplication(ConfigurableApplicationContext context) {
+		ConfigurableApplicationContext context = SpringApplication.run(DiscodeItApplication.class, args);
 		System.out.println("=== DiscodeIt Application 시작 ===");
 
-		try {
-			ChannelService channelService = context.getBean(ChannelService.class);
-			MessageService messageService = context.getBean(MessageService.class);
-			UserRepository userRepository = context.getBean(UserRepository.class);
+		ChannelService channelService = context.getBean(ChannelService.class);
+		MessageService messageService = context.getBean(MessageService.class);
+		UserRepository userRepository = context.getBean(UserRepository.class);
 
-			// 1. 사용자 생성 및 저장
-			User testUser = new User("testUser", "test@example.com", "password123");
-			testUser = userRepository.save(testUser);
-			UUID testUserId = testUser.getId();
+		// 1. 사용자 생성 및 저장
+		User testUser = new User("testUser", "test@example.com", "password123");
+		testUser = userRepository.save(testUser);
+		UUID testUserId = testUser.getId();
 
-			System.out.println("사용자 생성 완료: " + testUser.getId());
+		System.out.println("사용자 생성 완료: " + testUser.getId());
 
-			// 2. 공용 채널 생성
-			PublicChannelCreateRequest publicChannelRequest = new PublicChannelCreateRequest("Public Channel", "A public chat room");
-			ChannelResponse publicChannel = channelService.createPublicChannel(publicChannelRequest);
-			UUID testChannelId = publicChannel.getId();
+		// 2. 공용 채널 생성
+		PublicChannelCreateRequest publicChannelRequest = new PublicChannelCreateRequest("Public Channel", "A public chat room");
+		ChannelResponse publicChannel = channelService.createPublicChannel(publicChannelRequest);
+		UUID testChannelId = publicChannel.getId();
 
-			System.out.println("공용 채널 생성 완료: " + publicChannel.getId());
+		System.out.println("공용 채널 생성 완료: " + publicChannel.getId());
 
-			// 3. 메시지 생성
-			MessageCreateRequest messageRequest = new MessageCreateRequest(testChannelId, testUserId, "Hello World!", null);
-			MessageResponse messageResponse = messageService.create(messageRequest);
+		// 3. 메시지 생성
+		MessageCreateRequest messageRequest = new MessageCreateRequest(testChannelId, testUserId, "Hello World!", null);
+		MessageResponse messageResponse = messageService.create(messageRequest);
 
-			System.out.println("메시지 생성 완료: " + messageResponse.getContent());
+		System.out.println("메시지 생성 완료: " + messageResponse.getContent());
 
-		} catch (Exception e) {
-			System.err.println("애플리케이션 실행 중 오류 발생: " + e.getMessage());
-			e.printStackTrace();
-		}
+
+		context.close();
 	}
 }
