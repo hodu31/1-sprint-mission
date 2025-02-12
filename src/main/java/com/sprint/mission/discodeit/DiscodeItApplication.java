@@ -8,27 +8,27 @@ import com.sprint.mission.discodeit.entity.*;
 import com.sprint.mission.discodeit.repository.*;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @SpringBootApplication
 public class DiscodeItApplication implements CommandLineRunner {
 
-	@Autowired
-	private BasicChannelService basicChannelService;
-
-	@Autowired
-	private BasicMessageService basicMessageService;
-
-	@Autowired
-	private UserRepository userRepository;
+	private final BasicChannelService basicChannelService;
+	private final BasicMessageService basicMessageService;
+	private final UserRepository userRepository;
 
 	public static void main(String[] args) {
-		SpringApplication.run(DiscodeItApplication.class, args);
+		ConfigurableApplicationContext context = SpringApplication.run(DiscodeItApplication.class, args);
+		DiscodeItApplication app = context.getBean(DiscodeItApplication.class);
+		app.run();
 	}
 
 	@Override
