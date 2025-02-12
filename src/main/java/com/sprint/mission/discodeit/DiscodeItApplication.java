@@ -8,6 +8,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.basic.BasicChannelService;
 import com.sprint.mission.discodeit.service.basic.BasicMessageService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -18,16 +19,11 @@ import java.util.UUID;
 @SpringBootApplication
 public class DiscodeItApplication implements CommandLineRunner {
 
-	private final ConfigurableApplicationContext context;
-
-	public DiscodeItApplication(ConfigurableApplicationContext context) {
-		this.context = context;
-	}
+	@Autowired
+	private ConfigurableApplicationContext context;
 
 	public static void main(String[] args) {
-		ConfigurableApplicationContext context = SpringApplication.run(DiscodeItApplication.class, args);
-		DiscodeItApplication app = context.getBean(DiscodeItApplication.class);
-		app.run();
+		SpringApplication.run(DiscodeItApplication.class, args);
 	}
 
 	@Override
