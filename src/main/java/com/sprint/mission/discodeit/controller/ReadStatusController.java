@@ -12,14 +12,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/read-statuses")
-public class ReadStatusController {
+@RequestMapping("/api/readStatuses")
+@RequiredArgsConstructor
+public class ReadStatusController implements ReadStatusApiDocs {
 
   private final ReadStatusService readStatusService;
 
   @PostMapping
+  @Override
   public ResponseEntity<ReadStatus> create(@RequestBody ReadStatusCreateRequest request) {
     ReadStatus createdReadStatus = readStatusService.create(request);
     return ResponseEntity
@@ -27,7 +28,8 @@ public class ReadStatusController {
         .body(createdReadStatus);
   }
 
-  @PutMapping("/{readStatusId}")
+  @PatchMapping("/{readStatusId}")
+  @Override
   public ResponseEntity<ReadStatus> update(
       @PathVariable("readStatusId") UUID readStatusId,
       @RequestBody ReadStatusUpdateRequest request
@@ -38,8 +40,9 @@ public class ReadStatusController {
         .body(updatedReadStatus);
   }
 
-  @GetMapping("/user/{userId}")
-  public ResponseEntity<List<ReadStatus>> getAllByUserId(@PathVariable("userId") UUID userId) {
+  @GetMapping
+  @Override
+  public ResponseEntity<List<ReadStatus>> getAllByUserId(@RequestParam("userId") UUID userId) {
     List<ReadStatus> readStatuses = readStatusService.findAllByUserId(userId);
     return ResponseEntity
         .status(HttpStatus.OK)

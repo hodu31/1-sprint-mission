@@ -18,14 +18,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
-public class MessageController {
+@RequiredArgsConstructor
+public class MessageController implements MessageApiDocs {
 
   private final MessageService messageService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  @Override
   public ResponseEntity<Message> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
@@ -51,7 +52,8 @@ public class MessageController {
         .body(createdMessage);
   }
 
-  @PutMapping("/{messageId}")
+  @PatchMapping("/{messageId}") // PUT → PATCH로 변경
+  @Override
   public ResponseEntity<Message> update(
       @PathVariable("messageId") UUID messageId,
       @RequestBody MessageUpdateRequest request
@@ -63,6 +65,7 @@ public class MessageController {
   }
 
   @DeleteMapping("/{messageId}")
+  @Override
   public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
     messageService.delete(messageId);
     return ResponseEntity
@@ -70,9 +73,10 @@ public class MessageController {
         .build();
   }
 
-  @GetMapping("/channel/{channelId}")
+  @GetMapping
+  @Override
   public ResponseEntity<List<Message>> getAllByChannelId(
-      @PathVariable("channelId") UUID channelId) {
+      @RequestParam("channelId") UUID channelId) {
     List<Message> messages = messageService.findAllByChannelId(channelId);
     return ResponseEntity
         .status(HttpStatus.OK)
