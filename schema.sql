@@ -1,14 +1,4 @@
--- users 테이블
-CREATE TABLE users (
-    id UUID PRIMARY KEY,
-    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    password VARCHAR(100) NOT NULL
-);
-
--- binary_contents 테이블
+-- binary_contents 테이블 (먼저 생성)
 CREATE TABLE binary_contents (
     id UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -18,7 +8,19 @@ CREATE TABLE binary_contents (
     bytes BYTEA
 );
 
--- user_statuses 테이블
+-- users 테이블 (binary_contents가 이미 존재하므로 profile_id와 외래 키를 함께 정의)
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password VARCHAR(100) NOT NULL,
+    profile_id UUID,
+    FOREIGN KEY (profile_id) REFERENCES binary_contents(id) ON DELETE CASCADE
+);
+
+-- 나머지 테이블들 (기존 쿼리 유지)
 CREATE TABLE user_statuses (
     id UUID PRIMARY KEY,
     user_id UUID,
@@ -28,7 +30,6 @@ CREATE TABLE user_statuses (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- channels 테이블
 CREATE TABLE channels (
     id UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -38,7 +39,6 @@ CREATE TABLE channels (
     type VARCHAR(10) NOT NULL CHECK (type IN ('PUBLIC', 'PRIVATE'))
 );
 
--- read_statuses 테이블
 CREATE TABLE read_statuses (
     id UUID PRIMARY KEY,
     user_id UUID,
@@ -50,7 +50,6 @@ CREATE TABLE read_statuses (
     FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
 );
 
--- messages 테이블
 CREATE TABLE messages (
     id UUID PRIMARY KEY,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -62,7 +61,6 @@ CREATE TABLE messages (
     FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- message_attachments 테이블
 CREATE TABLE message_attachments (
     id UUID PRIMARY KEY,
     message_id UUID,
@@ -70,8 +68,3 @@ CREATE TABLE message_attachments (
     FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE,
     FOREIGN KEY (attachment_id) REFERENCES binary_contents(id) ON DELETE CASCADE
 );
-
--- users_profile 테이블 (users와 binary_contents 간의 관계)
-ALTER TABLE users
-ADD COLUMN profile_id UUID,
-ADD FOREIGN KEY (profile_id) REFERENCES binary_contents(id) ON DELETE CASCADE;
