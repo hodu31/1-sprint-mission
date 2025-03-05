@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.controller;
 
+import com.sprint.mission.discodeit.controller.api.MessageApi;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageCreateRequest;
 import com.sprint.mission.discodeit.dto.request.MessageUpdateRequest;
@@ -18,15 +19,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/messages")
-@RequiredArgsConstructor
-public class MessageController implements MessageApiDocs {
+public class MessageController implements MessageApi {
 
   private final MessageService messageService;
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @Override
   public ResponseEntity<Message> create(
       @RequestPart("messageCreateRequest") MessageCreateRequest messageCreateRequest,
       @RequestPart(value = "attachments", required = false) List<MultipartFile> attachments
@@ -52,20 +52,16 @@ public class MessageController implements MessageApiDocs {
         .body(createdMessage);
   }
 
-  @PatchMapping("/{messageId}") // PUT → PATCH로 변경
-  @Override
-  public ResponseEntity<Message> update(
-      @PathVariable("messageId") UUID messageId,
-      @RequestBody MessageUpdateRequest request
-  ) {
+  @PatchMapping(path = "{messageId}")
+  public ResponseEntity<Message> update(@PathVariable("messageId") UUID messageId,
+      @RequestBody MessageUpdateRequest request) {
     Message updatedMessage = messageService.update(messageId, request);
     return ResponseEntity
         .status(HttpStatus.OK)
         .body(updatedMessage);
   }
 
-  @DeleteMapping("/{messageId}")
-  @Override
+  @DeleteMapping(path = "{messageId}")
   public ResponseEntity<Void> delete(@PathVariable("messageId") UUID messageId) {
     messageService.delete(messageId);
     return ResponseEntity
@@ -74,8 +70,7 @@ public class MessageController implements MessageApiDocs {
   }
 
   @GetMapping
-  @Override
-  public ResponseEntity<List<Message>> getAllByChannelId(
+  public ResponseEntity<List<Message>> findAllByChannelId(
       @RequestParam("channelId") UUID channelId) {
     List<Message> messages = messageService.findAllByChannelId(channelId);
     return ResponseEntity
