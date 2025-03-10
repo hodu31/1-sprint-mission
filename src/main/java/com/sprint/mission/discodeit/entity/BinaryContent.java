@@ -1,14 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
 import com.sprint.mission.discodeit.entity.base.BaseEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Lob;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,17 +24,9 @@ public class BinaryContent extends BaseEntity {
   @Column(name = "content_type")
   private String contentType;
 
-  @Lob
-  @Column(name = "bytes", nullable = false)
-  private byte[] bytes;
-
-  @OneToMany(mappedBy = "attachment", cascade = CascadeType.ALL, orphanRemoval = false)
-  private List<MessageAttachment> messageAttachments = new ArrayList<>();
-
-  public BinaryContent(String fileName, Long size, String contentType, byte[] bytes) {
+  public BinaryContent(String fileName, Long size, String contentType) {
     this.fileName = fileName;
     this.size = size;
     this.contentType = contentType;
-    this.bytes = bytes;
   }
 }

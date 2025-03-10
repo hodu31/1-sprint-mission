@@ -1,7 +1,9 @@
 package com.sprint.mission.discodeit.entity;
 
-import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
+import static jakarta.persistence.FetchType.LAZY;
+
 import jakarta.persistence.*;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,18 +13,24 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "message_attachments")
-public class MessageAttachment extends BaseUpdatableEntity {
+@IdClass(MessageAttachmentId.class)
+public class MessageAttachment {
 
-  @ManyToOne
+  @Id
+  @ManyToOne(fetch = LAZY)
   @JoinColumn(name = "message_id", nullable = false)
   private Message message;
 
-  @ManyToOne
-  @JoinColumn(name = "attachment_id", nullable = false)
-  private BinaryContent attachment;
+  @Id
+  @Column(name = "attachment_id", nullable = false)
+  private UUID attachmentId;
 
-  public MessageAttachment(Message message, BinaryContent attachment) {
+  public MessageAttachment(Message message, UUID attachmentId) {
     this.message = message;
-    this.attachment = attachment;
+    this.attachmentId = attachmentId;
+  }
+
+  public UUID getAttachmentId() {
+    return attachmentId;
   }
 }

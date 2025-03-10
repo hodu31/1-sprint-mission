@@ -1,7 +1,10 @@
 package com.sprint.mission.discodeit.entity;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
@@ -9,9 +12,8 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
+import java.util.UUID;
 import lombok.Getter;
-import jakarta.persistence.Column;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -31,16 +33,21 @@ public class User extends BaseUpdatableEntity {
   @Column(name = "password", nullable = false)
   private String password;
 
-  @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "profile_id")
-  private BinaryContent profile;
+  @Column(name = "profile_id")
+  private UUID profileId; // BinaryContent 객체 대신 ID만 저장
 
-  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = LAZY)
   private UserStatus userStatus;
 
-  @Setter(AccessLevel.NONE)
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ReadStatus> readStatuses = new ArrayList<>();
+
+  public User(String username, String email, String password, UUID profileId) {
+    this.username = username;
+    this.email = email;
+    this.password = password;
+    this.profileId = profileId;
+  }
 
   public void addReadStatus(ReadStatus readStatus) {
     this.readStatuses.add(readStatus);
@@ -52,15 +59,7 @@ public class User extends BaseUpdatableEntity {
     readStatus.setUser(null);
   }
 
-  public void User(String username, String email, String password, BinaryContent profile) {
-    this.username = username;
-    this.email = email;
-    this.password = password;
-    this.profile = profile;
-  }
-
-  public void update(String newUsername, String newEmail, String newPassword,
-      BinaryContent newProfile) {
+  public void update(String newUsername, String newEmail, String newPassword, UUID newProfileId) {
     if (newUsername != null && !newUsername.equals(this.username)) {
       this.username = newUsername;
     }
@@ -70,8 +69,8 @@ public class User extends BaseUpdatableEntity {
     if (newPassword != null && !newPassword.equals(this.password)) {
       this.password = newPassword;
     }
-    if (newProfile != null && !newProfile.equals(this.profile)) {
-      this.profile = newProfile;
+    if (newProfileId != null && !newProfileId.equals(this.profileId)) {
+      this.profileId = newProfileId;
     }
   }
 }

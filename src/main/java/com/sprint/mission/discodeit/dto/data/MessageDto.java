@@ -5,17 +5,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class MessageDto {
 
   private UUID id;
-  private String username;
-  private String email;
-  private BinaryContentDto profile;
-  private Boolean online;
+  private Instant createdAt;
+  private Instant updatedAt;
+  private String content;
+
+  private UUID channelId;
+  private UserDto author;
+
+  private List<BinaryContentDto> attachments;
 }

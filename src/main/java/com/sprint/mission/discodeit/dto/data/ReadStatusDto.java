@@ -5,17 +5,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class ReadStatusDto {
 
   private UUID id;
-  private String username;
-  private String email;
-  private BinaryContentDto profile;
-  private Boolean online;
+  private UUID userId;
+  private UUID channelId;
+  private Instant lastReadAt;
 }

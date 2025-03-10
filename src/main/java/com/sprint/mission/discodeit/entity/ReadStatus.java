@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -16,22 +18,18 @@ import java.time.Instant;
 @Table(name = "read_statuses")
 public class ReadStatus extends BaseUpdatableEntity {
 
-  @Setter(AccessLevel.NONE)
-  @ManyToOne
+
+  @ManyToOne(fetch = LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Setter(AccessLevel.NONE)
-  @ManyToOne
+  @ManyToOne(fetch = LAZY)
   @JoinColumn(name = "channel_id", nullable = false)
   private Channel channel;
 
   @Column(name = "last_read_at")
   private Instant lastReadAt;
 
-  public void setUser(User user) {
-    this.user = user;
-  }
 
   public ReadStatus(User user, Channel channel, Instant lastReadAt) {
     this.user = user;

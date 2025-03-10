@@ -10,7 +10,6 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,13 +25,12 @@ public class Channel extends BaseUpdatableEntity {
   @Column(name = "type", nullable = false)
   private ChannelType type;
 
-  @Column(name = "name", nullable = false)
+  @Column(name = "name")
   private String name;
 
   @Column(name = "description")
   private String description;
 
-  @Setter(AccessLevel.NONE)
   @OneToMany(mappedBy = "channel", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Message> messages = new ArrayList<>();
 

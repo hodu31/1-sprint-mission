@@ -1,5 +1,7 @@
 package com.sprint.mission.discodeit.entity;
 
+import static jakarta.persistence.FetchType.LAZY;
+
 import com.sprint.mission.discodeit.entity.base.BaseUpdatableEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +24,7 @@ import java.time.Instant;
 public class UserStatus extends BaseUpdatableEntity {
 
   @Setter(AccessLevel.NONE)
-  @OneToOne
+  @OneToOne(fetch = LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
