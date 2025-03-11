@@ -80,17 +80,25 @@ public class BasicMessageService implements MessageService {
 
   @Override
   @Transactional(readOnly = true)
-  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size,
+  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, String cursor, int size,
       String sort) {
     String[] sortParams = sort.split(",");
     String sortField = sortParams[0];
-    String sortDir = sortParams.length > 1 ? sortParams[1] : "asc";
+    String sortDir = sortParams.length > 1 ? sortParams[1] : "desc";
     Sort.Direction direction = Sort.Direction.fromString(sortDir);
-    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+    Sort sortOrder = Sort.by(direction, sortField);
 
-    Page<Message> messagePage = messageRepository.findAllByChannel_Id(channelId, pageable);
+    Pageable pageable = PageRequest.of(0, size, sortOrder);
+    List<Message> messages;
 
-    List<UUID> attachmentIds = messagePage.stream()
+    if (cursor == null) {
+      messages = messageRepository.findAllByChannel_Id(channelId, pageable).getContent();
+    } else {
+      messages = messageRepository.findByChannelIdAndCursor(channelId, cursor, pageable);
+    }
+
+    // 첨부 파일 조회 및 MessageDto 변환 로직 (기존과 동일)
+    List<UUID> attachmentIds = messages.stream()
         .flatMap(msg -> msg.getAttachments().stream().map(MessageAttachment::getAttachmentId))
         .distinct()
         .collect(Collectors.toList());
@@ -98,7 +106,7 @@ public class BasicMessageService implements MessageService {
     List<BinaryContentDto> attachmentDtos = attachmentIds.isEmpty() ?
         new ArrayList<>() : binaryContentService.findAllByIdIn(attachmentIds);
 
-    List<MessageDto> messageDtos = messagePage.getContent().stream().map(message -> {
+    List<MessageDto> messageDtos = messages.stream().map(message -> {
       UserDto authorDto = new UserDto(
           message.getAuthor().getId(),
           message.getAuthor().getUsername(),
@@ -129,14 +137,13 @@ public class BasicMessageService implements MessageService {
       );
     }).collect(Collectors.toList());
 
-    PageResponse<MessageDto> response = new PageResponse<>();
-    response.setContent(messageDtos);
-    response.setNumber(messagePage.getNumber());
-    response.setSize(messagePage.getSize());
-    response.setHasNext(messagePage.hasNext());
-    response.setTotalElements(messagePage.getTotalElements());
+    // 다음 커서 계산
+    String nextCursor = messages.isEmpty() ? null :
+        messages.get(messages.size() - 1).getCreatedAt().toString();
+    boolean hasNext = messages.size() == size;
 
-    return response;
+    // PageResponseMapper를 사용해 응답 생성
+    return PageResponseMapper.toCursorPageResponse(messageDtos, size, hasNext, nextCursor);
   }
 
 
