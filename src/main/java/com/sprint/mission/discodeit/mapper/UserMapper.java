@@ -1,30 +1,29 @@
 package com.sprint.mission.discodeit.mapper;
 
+import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.service.BinaryContentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 public class UserMapper {
 
-  private final BinaryContentService binaryContentService;
+  private final BinaryContentMapper binaryContentMapper;
+  private final UserStatusMapper userStatusMapper;
 
-  public UserMapper(BinaryContentService binaryContentService) {
-    this.binaryContentService = binaryContentService;
+  public UserMapper(BinaryContentMapper binaryContentMapper, UserStatusMapper userStatusMapper) {
+    this.binaryContentMapper = binaryContentMapper;
+    this.userStatusMapper = userStatusMapper;
   }
 
   public UserDto toDto(User user) {
-    UserDto dto = new UserDto();
-    dto.setId(user.getId());
-    dto.setUsername(user.getUsername());
-    dto.setEmail(user.getEmail());
-
-    dto.setProfile(user.getProfileId() != null
-        ? binaryContentService.find(user.getProfileId())
-        : null);
-
-    dto.setOnline(user.getUserStatus() != null && user.getUserStatus().isOnline());
-    return dto;
+    return new UserDto(
+        user.getId(),
+        user.getUsername(),
+        user.getEmail(),
+        user.getProfile() != null ? binaryContentMapper.toDto(user.getProfile()) : null,
+        user.getUserStatus() != null && user.getUserStatus().isOnline()
+    );
   }
 }

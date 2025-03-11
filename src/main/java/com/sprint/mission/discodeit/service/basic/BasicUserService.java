@@ -51,7 +51,6 @@ public class BasicUserService implements UserService {
       throw new IllegalArgumentException("User with username " + username + " already exists");
     }
 
-    // 프로필 이미지 저장
     UUID profileId = optionalProfileCreateRequest
         .map(binaryContentService::create)
         .map(BinaryContentDto::getId)
@@ -59,11 +58,9 @@ public class BasicUserService implements UserService {
 
     String password = userCreateRequest.password();
 
-    // User 엔티티 생성 및 저장
     User user = new User(username, email, password, profileId);
     User createdUser = userRepository.save(user);
 
-    // 사용자 상태(UserStatus) 생성 후 저장
     Instant now = Instant.now();
     UserStatus userStatus = new UserStatus(createdUser, now);
     userStatusRepository.save(userStatus);
@@ -80,7 +77,7 @@ public class BasicUserService implements UserService {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<UserDto> findAll() {
     return userRepository.findAll()
         .stream()
@@ -98,7 +95,6 @@ public class BasicUserService implements UserService {
     String newUsername = userUpdateRequest.newUsername();
     String newEmail = userUpdateRequest.newEmail();
 
-    // 중복 체크
     if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
       throw new IllegalArgumentException("User with email " + newEmail + " already exists");
     }
@@ -106,7 +102,6 @@ public class BasicUserService implements UserService {
       throw new IllegalArgumentException("User with username " + newUsername + " already exists");
     }
 
-    // 프로필 업데이트 요청이 있으면 기존 프로필 삭제 후 새 프로필 저장
     UUID newProfileId = optionalProfileCreateRequest
         .map(profileRequest -> {
           if (user.getProfileId() != null) {
@@ -128,41 +123,28 @@ public class BasicUserService implements UserService {
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new NoSuchElementException("User with id " + userId + " not found"));
 
-    // 프로필 이미지가 있으면 삭제
     if (user.getProfileId() != null) {
       binaryContentService.delete(user.getProfileId());
     }
-    // 사용자 상태 삭제
     userStatusRepository.deleteByUser_Id(user.getId());
-    // User 삭제
+
     userRepository.deleteById(userId);
   }
 
   private UserDto toDto(User user) {
-    // UserStatusDto를 통해 online 상태 조회
-    Boolean online = userStatusRepository.findByUser_Id(user.getId())
-        .map(userStatus -> {
-          UserStatusDto userStatusDto = new UserStatusDto(
-              userStatus.getId(),
-              userStatus.getUser().getId(),
-              userStatus.getLastActiveAt()
-          );
-          Instant now = Instant.now();
-          Instant lastActiveAt = userStatusDto.getLastActiveAt();
-          return lastActiveAt != null && Duration.between(lastActiveAt, now).toMinutes() < 5;
-        })
-        .orElse(null);
-
-    BinaryContentDto profileDto = (user.getProfileId() != null)
-        ? binaryContentService.find(user.getProfileId())
-        : null;
-
     return new UserDto(
         user.getId(),
         user.getUsername(),
         user.getEmail(),
-        profileDto,
-        online
+        user.getProfile() != null ? new BinaryContentDto(
+            user.getProfile().getId(),
+            user.getProfile().getFileName(),
+            user.getProfile().getSize(),
+            user.getProfile().getContentType()
+        ) : null,
+        user.getUserStatus() != null && user.getUserStatus().isOnline()
     );
   }
+
+
 }

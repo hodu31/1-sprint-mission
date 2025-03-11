@@ -32,7 +32,6 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
 
   @PostConstruct
   public void init() throws IOException {
-    // 루트 디렉토리가 없으면 생성
     if (!Files.exists(root)) {
       Files.createDirectories(root);
     }
@@ -96,7 +95,6 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
   }
 
   private Path resolvePath(UUID id) {
-    // 파일 저장 경로 규칙: {root}/{UUID}
     return root.resolve(id.toString());
   }
 }

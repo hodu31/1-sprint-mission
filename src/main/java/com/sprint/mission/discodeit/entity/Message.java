@@ -11,7 +11,9 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,7 +38,7 @@ public class Message extends BaseUpdatableEntity {
   private User author;
 
   @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
-  private List<MessageAttachment> attachments = new ArrayList<>();
+  private Set<MessageAttachment> attachments = new HashSet<>();
 
   public void addAttachment(MessageAttachment attachment) {
     this.attachments.add(attachment);

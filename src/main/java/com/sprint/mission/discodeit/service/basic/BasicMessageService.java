@@ -47,7 +47,6 @@ public class BasicMessageService implements MessageService {
     UUID channelId = messageCreateRequest.channelId();
     UUID authorId = messageCreateRequest.authorId();
 
-    // 실제 Channel, User 엔티티 조회
     Channel channel = channelRepository.findById(channelId)
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " does not exist"));
@@ -56,23 +55,17 @@ public class BasicMessageService implements MessageService {
             () -> new NoSuchElementException("Author with id " + authorId + " does not exist"));
 
     String content = messageCreateRequest.content();
-    // 첨부파일은 아직 없으므로 빈 리스트로 생성
     Message message = new Message(content, channel, author, new ArrayList<>());
-    // 초기 Message 저장 (필요시 ID 생성)
     message = messageRepository.save(message);
 
-    // 첨부파일 처리: BinaryContentService를 통해 BinaryContent 생성 및 저장
     for (BinaryContentCreateRequest attachmentRequest : binaryContentCreateRequests) {
       BinaryContentDto binaryContentDto = binaryContentService.create(attachmentRequest);
 
-      // MessageAttachment 생성 및 Message에 추가
       MessageAttachment attachment = new MessageAttachment(message, binaryContentDto.getId());
       message.addAttachment(attachment);
     }
 
-    // 첨부파일이 반영된 Message를 다시 저장
     Message savedMessage = messageRepository.save(message);
-    // MessageDto로 변환하여 반환
     return toDto(savedMessage);
   }
 
@@ -86,17 +79,66 @@ public class BasicMessageService implements MessageService {
   }
 
   @Override
-  @Transactional
-  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size) {
-    Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+  @Transactional(readOnly = true)
+  public PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size,
+      String sort) {
+    String[] sortParams = sort.split(",");
+    String sortField = sortParams[0];
+    String sortDir = sortParams.length > 1 ? sortParams[1] : "asc";
+    Sort.Direction direction = Sort.Direction.fromString(sortDir);
+    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortField));
+
     Page<Message> messagePage = messageRepository.findAllByChannel_Id(channelId, pageable);
 
-    // Page<Message> -> Page<MessageDto> (map 연산)
-    Page<MessageDto> dtoPage = messagePage.map(this::toDto);
+    List<UUID> attachmentIds = messagePage.stream()
+        .flatMap(msg -> msg.getAttachments().stream().map(MessageAttachment::getAttachmentId))
+        .distinct()
+        .collect(Collectors.toList());
 
-    // PageResponseMapper를 통해 Page<MessageDto> -> PageResponse<MessageDto>
-    return PageResponseMapper.fromPage(dtoPage);
+    List<BinaryContentDto> attachmentDtos = attachmentIds.isEmpty() ?
+        new ArrayList<>() : binaryContentService.findAllByIdIn(attachmentIds);
+
+    List<MessageDto> messageDtos = messagePage.getContent().stream().map(message -> {
+      UserDto authorDto = new UserDto(
+          message.getAuthor().getId(),
+          message.getAuthor().getUsername(),
+          message.getAuthor().getEmail(),
+          message.getAuthor().getProfile() != null ?
+              new BinaryContentDto(
+                  message.getAuthor().getProfile().getId(),
+                  message.getAuthor().getProfile().getFileName(),
+                  message.getAuthor().getProfile().getSize(),
+                  message.getAuthor().getProfile().getContentType()
+              ) : null,
+          null
+      );
+
+      List<BinaryContentDto> messageAttachments = attachmentDtos.stream()
+          .filter(attachment -> message.getAttachments().stream()
+              .anyMatch(msgAtt -> msgAtt.getAttachmentId().equals(attachment.getId())))
+          .collect(Collectors.toList());
+
+      return new MessageDto(
+          message.getId(),
+          message.getCreatedAt(),
+          message.getUpdatedAt(),
+          message.getContent(),
+          message.getChannel().getId(),
+          authorDto,
+          messageAttachments
+      );
+    }).collect(Collectors.toList());
+
+    PageResponse<MessageDto> response = new PageResponse<>();
+    response.setContent(messageDtos);
+    response.setNumber(messagePage.getNumber());
+    response.setSize(messagePage.getSize());
+    response.setHasNext(messagePage.hasNext());
+    response.setTotalElements(messagePage.getTotalElements());
+
+    return response;
   }
+
 
   @Override
   @Transactional
@@ -117,7 +159,6 @@ public class BasicMessageService implements MessageService {
         .orElseThrow(
             () -> new NoSuchElementException("Message with id " + messageId + " not found"));
 
-    // 첨부파일(MessageAttachment)에 포함된 BinaryContent 삭제
     message.getAttachments().forEach(attachment -> {
       binaryContentService.delete(attachment.getAttachmentId());
     });
@@ -125,7 +166,6 @@ public class BasicMessageService implements MessageService {
     messageRepository.deleteById(messageId);
   }
 
-  // Message를 MessageDto로 변환하는 메서드
   private MessageDto toDto(Message message) {
     UserDto authorDto = new UserDto(
         message.getAuthor().getId(),
@@ -135,7 +175,6 @@ public class BasicMessageService implements MessageService {
         null
     );
 
-    // BinaryContentService를 통해 첨부파일 정보 조회
     List<BinaryContentDto> attachmentDtos = message.getAttachments().stream()
         .map(attachment -> binaryContentService.find(attachment.getAttachmentId()))
         .collect(Collectors.toList());

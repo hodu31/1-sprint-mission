@@ -14,5 +14,5 @@ public interface BinaryContentStorage {
 
   ResponseEntity<?> download(BinaryContentDto binaryContentDto);
 
-  void delete(UUID id); // 삭제 메서드 추가
+  void delete(UUID id);
 }

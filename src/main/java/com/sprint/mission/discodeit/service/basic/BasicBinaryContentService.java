@@ -87,7 +87,6 @@ public class BasicBinaryContentService implements BinaryContentService {
   @Override
   @Transactional(readOnly = true)
   public ResponseEntity<?> download(UUID binaryContentId) {
-    // 조회된 메타 정보를 이용해 다운로드용 ResponseEntity 반환
     BinaryContentDto dto = find(binaryContentId);
     return binaryContentStorage.download(dto);
   }

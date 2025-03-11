@@ -16,7 +16,7 @@ public interface MessageService {
 
   MessageDto find(UUID messageId);
 
-  PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size);
+  PageResponse<MessageDto> findAllByChannelId(UUID channelId, int page, int size, String sort);
 
   MessageDto update(UUID messageId, MessageUpdateRequest request);
 

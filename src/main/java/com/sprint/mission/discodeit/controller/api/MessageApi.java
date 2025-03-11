@@ -85,6 +85,7 @@ public interface MessageApi {
   ResponseEntity<PageResponse<MessageDto>> findAllByChannelId(
       @Parameter(description = "조회할 Channel ID") UUID channelId,
       @Parameter(description = "페이지 번호", example = "0") int page,
-      @Parameter(description = "페이지 크기", example = "50") int size
+      @Parameter(description = "페이지 크기", example = "50") int size,
+      @Parameter(description = "종렬방식", example = "50") String sort
   );
 }

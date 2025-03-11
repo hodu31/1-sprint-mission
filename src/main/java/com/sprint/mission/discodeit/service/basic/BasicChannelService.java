@@ -17,14 +17,9 @@ import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import com.sprint.mission.discodeit.repository.UserRepository;
 import com.sprint.mission.discodeit.service.ChannelService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -48,7 +43,6 @@ public class BasicChannelService implements ChannelService {
     String description = request.description();
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
-    // Channel 저장 후 DTO로 변환하여 반환
     Channel savedChannel = channelRepository.save(channel);
     return toDto(savedChannel);
   }
@@ -56,11 +50,9 @@ public class BasicChannelService implements ChannelService {
   @Override
   @Transactional
   public ChannelDto create(PrivateChannelCreateRequest request) {
-    // 1) 채널 엔티티 생성 및 저장
     Channel channel = new Channel(ChannelType.PRIVATE, null, null);
     Channel createdChannel = channelRepository.save(channel);
 
-    // 2) participantIds()를 돌면서, 실제 User 엔티티를 조회한 후 ReadStatus 생성
     for (UUID userId : request.participantIds()) {
       User user = userRepository.findById(userId)
           .orElseThrow(() -> new NoSuchElementException("User not found: " + userId));
@@ -69,7 +61,6 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(status);
     }
 
-    // DTO로 변환하여 반환
     return toDto(createdChannel);
   }
 
@@ -83,22 +74,26 @@ public class BasicChannelService implements ChannelService {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
-    List<ReadStatus> readStatuses = readStatusRepository.findAllByUser_Id(userId);
-    List<UUID> mySubscribedChannelIds = readStatuses.stream()
-        .map(rs -> rs.getChannel().getId())
-        .distinct()
-        .toList();
+    List<Channel> channels = channelRepository.findAllByUserIdWithParticipants(userId);
 
-    return channelRepository.findAll().stream()
-        .filter(channel ->
-            channel.getType().equals(ChannelType.PUBLIC)
-                || mySubscribedChannelIds.contains(channel.getId())
-        )
-        .map(this::toDto)
+    return channels.stream()
+        .map(channel -> new ChannelDto(
+            channel.getId(),
+            channel.getType(),
+            channel.getName(),
+            channel.getDescription(),
+            channel.getReadStatuses().stream()
+                .map(ReadStatus::getUser)
+                .distinct()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList()),
+            null
+        ))
         .collect(Collectors.toList());
   }
+
 
   @Override
   @Transactional
@@ -113,7 +108,6 @@ public class BasicChannelService implements ChannelService {
     }
     channel.update(newName, newDescription);
 
-    // Channel 저장 후 DTO로 변환하여 반환
     Channel updatedChannel = channelRepository.save(channel);
     return toDto(updatedChannel);
   }
@@ -132,27 +126,23 @@ public class BasicChannelService implements ChannelService {
   }
 
   private ChannelDto toDto(Channel channel) {
-    // 50개씩 최신 메시지 순으로 조회 (total count는 필요 없으므로 Slice 사용)
-    Pageable pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
-    Slice<Message> messageSlice = messageRepository.findAllByChannel_Id(channel.getId(), pageable);
-
-    // 최신 메시지가 없으면 Instant.MIN, 있으면 첫번째 메시지의 생성일자를 사용
-    Instant lastMessageAt = messageSlice.getContent().isEmpty()
-        ? Instant.MIN
-        : messageSlice.getContent().get(0).getCreatedAt();
+    Instant lastMessageAt = channel.getMessages().stream()
+        .map(Message::getCreatedAt)
+        .max(Instant::compareTo)
+        .orElse(null);
 
     List<UserDto> participants;
     if (channel.getType().equals(ChannelType.PRIVATE)) {
-      participants = new ArrayList<>();
-      readStatusRepository.findAllByChannel_Id(channel.getId())
-          .stream()
+      participants = channel.getReadStatuses().stream()
           .map(ReadStatus::getUser)
           .distinct()
-          .forEach(user -> participants.add(userMapper.toDto(user)));
+          .map(userMapper::toDto)
+          .collect(Collectors.toList());
     } else {
       participants = channel.getMessages().stream()
-          .map(message -> userMapper.toDto(message.getAuthor()))
+          .map(Message::getAuthor)
           .distinct()
+          .map(userMapper::toDto)
           .collect(Collectors.toList());
     }
 
@@ -165,4 +155,5 @@ public class BasicChannelService implements ChannelService {
         lastMessageAt
     );
   }
+
 }

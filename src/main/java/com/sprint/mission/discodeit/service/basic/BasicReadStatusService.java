@@ -36,7 +36,6 @@ public class BasicReadStatusService implements ReadStatusService {
     UUID userId = request.userId();
     UUID channelId = request.channelId();
 
-    // 실제 User, Channel 엔티티 조회
     User user = userRepository.findById(userId)
         .orElseThrow(
             () -> new NoSuchElementException("User with id " + userId + " does not exist"));
@@ -44,7 +43,6 @@ public class BasicReadStatusService implements ReadStatusService {
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " does not exist"));
 
-    // 해당 user와 channel에 대해 이미 ReadStatus가 존재하는지 확인
     if (readStatusRepository.findAllByUser_Id(userId).stream()
         .anyMatch(readStatus -> readStatus.getChannel().getId().equals(channelId))) {
       throw new IllegalArgumentException(
@@ -55,7 +53,6 @@ public class BasicReadStatusService implements ReadStatusService {
     log.info("Creating ReadStatus with userId: {}, channelId: {}, lastReadAt: {}", userId,
         channelId, lastReadAt);
 
-    // User와 Channel 객체를 이용하여 ReadStatus 생성
     ReadStatus readStatus = new ReadStatus(user, channel, lastReadAt);
     ReadStatus savedReadStatus = readStatusRepository.save(readStatus);
     return toDto(savedReadStatus);
@@ -71,11 +68,16 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  @Transactional
+  @Transactional(readOnly = true)
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     return readStatusRepository.findAllByUser_Id(userId)
         .stream()
-        .map(this::toDto)
+        .map(readStatus -> new ReadStatusDto(
+            readStatus.getId(),
+            readStatus.getUser().getId(),
+            readStatus.getChannel().getId(),
+            readStatus.getLastReadAt()
+        ))
         .collect(Collectors.toList());
   }
 
@@ -103,7 +105,6 @@ public class BasicReadStatusService implements ReadStatusService {
     readStatusRepository.deleteById(readStatusId);
   }
 
-  // ReadStatus를 ReadStatusDto로 변환하는 메서드
   private ReadStatusDto toDto(ReadStatus readStatus) {
     return new ReadStatusDto(
         readStatus.getId(),

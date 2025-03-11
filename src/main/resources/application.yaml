@@ -11,6 +11,7 @@ spring:
     password: discodeit1234
     driver-class-name: org.postgresql.Driver
   jpa:
+    open-in-view: false
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     properties:
       hibernate:

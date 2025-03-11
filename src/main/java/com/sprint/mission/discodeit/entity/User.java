@@ -7,6 +7,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -41,6 +42,10 @@ public class User extends BaseUpdatableEntity {
 
   @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<ReadStatus> readStatuses = new ArrayList<>();
+
+  @ManyToOne(fetch = LAZY)
+  @JoinColumn(name = "profile_id", insertable = false, updatable = false)
+  private BinaryContent profile;
 
   public User(String username, String email, String password, UUID profileId) {
     this.username = username;

@@ -30,18 +30,15 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatusDto create(UserStatusCreateRequest request) {
     UUID userId = request.userId();
 
-    // User 엔티티가 존재하는지 확인
     User user = userRepository.findById(userId)
         .orElseThrow(
             () -> new NoSuchElementException("User with id " + userId + " does not exist"));
 
-    // 이미 UserStatus가 존재하는지 중복 체크
     if (userStatusRepository.findByUser_Id(userId).isPresent()) {
       throw new IllegalArgumentException("UserStatus for userId " + userId + " already exists");
     }
 
     Instant lastActiveAt = request.lastActiveAt();
-    // User 객체를 이용해 UserStatus 생성
     UserStatus userStatus = new UserStatus(user, lastActiveAt);
 
     UserStatus savedUserStatus = userStatusRepository.save(userStatus);
@@ -85,7 +82,6 @@ public class BasicUserStatusService implements UserStatusService {
   public UserStatusDto updateByUserId(UUID userId, UserStatusUpdateRequest request) {
     Instant newLastActiveAt = request.newLastActiveAt();
 
-    // userId 기준으로 UserStatus 조회
     UserStatus userStatus = userStatusRepository.findByUser_Id(userId)
         .orElseThrow(
             () -> new NoSuchElementException("UserStatus with userId " + userId + " not found"));
@@ -104,7 +100,6 @@ public class BasicUserStatusService implements UserStatusService {
     userStatusRepository.deleteById(userStatusId);
   }
 
-  // UserStatus를 UserStatusDto로 변환하는 메서드
   private UserStatusDto toDto(UserStatus userStatus) {
     return new UserStatusDto(
         userStatus.getId(),
