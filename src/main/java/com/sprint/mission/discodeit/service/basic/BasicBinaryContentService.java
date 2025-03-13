@@ -3,6 +3,7 @@ package com.sprint.mission.discodeit.service.basic;
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.dto.request.BinaryContentCreateRequest;
 import com.sprint.mission.discodeit.entity.BinaryContent;
+import com.sprint.mission.discodeit.mapper.BinaryContentMapper;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.service.BinaryContentService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -22,6 +22,7 @@ public class BasicBinaryContentService implements BinaryContentService {
 
   private final BinaryContentRepository binaryContentRepository;
   private final BinaryContentStorage binaryContentStorage;
+  private final BinaryContentMapper binaryContentMapper;  // 새로 추가된 매퍼 주입
 
   @Override
   @Transactional
@@ -38,12 +39,7 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent savedContent = binaryContentRepository.save(binaryContent);
     binaryContentStorage.put(savedContent.getId(), bytes);
 
-    return new BinaryContentDto(
-        savedContent.getId(),
-        savedContent.getFileName(),
-        savedContent.getSize(),
-        savedContent.getContentType()
-    );
+    return binaryContentMapper.toDto(savedContent);
   }
 
   @Override
@@ -52,26 +48,16 @@ public class BasicBinaryContentService implements BinaryContentService {
     BinaryContent binaryContent = binaryContentRepository.findById(binaryContentId)
         .orElseThrow(() -> new NoSuchElementException(
             "BinaryContent with id " + binaryContentId + " not found"));
-    return new BinaryContentDto(
-        binaryContent.getId(),
-        binaryContent.getFileName(),
-        binaryContent.getSize(),
-        binaryContent.getContentType()
-    );
+
+    return binaryContentMapper.toDto(binaryContent);
   }
 
   @Override
   @Transactional(readOnly = true)
   public List<BinaryContentDto> findAllByIdIn(List<UUID> binaryContentIds) {
     List<BinaryContent> contents = binaryContentRepository.findAllByIdIn(binaryContentIds);
-    return contents.stream()
-        .map(content -> new BinaryContentDto(
-            content.getId(),
-            content.getFileName(),
-            content.getSize(),
-            content.getContentType()
-        ))
-        .collect(Collectors.toList());
+
+    return binaryContentMapper.toDtoList(contents);
   }
 
   @Override

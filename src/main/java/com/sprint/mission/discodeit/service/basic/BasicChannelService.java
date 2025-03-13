@@ -1,15 +1,14 @@
 package com.sprint.mission.discodeit.service.basic;
 
 import com.sprint.mission.discodeit.dto.data.ChannelDto;
-import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.dto.request.PrivateChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelCreateRequest;
 import com.sprint.mission.discodeit.dto.request.PublicChannelUpdateRequest;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
 import com.sprint.mission.discodeit.entity.User;
+import com.sprint.mission.discodeit.mapper.ChannelMapper;
 import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.repository.ChannelRepository;
 import com.sprint.mission.discodeit.repository.MessageRepository;
@@ -23,7 +22,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
@@ -35,6 +33,7 @@ public class BasicChannelService implements ChannelService {
   private final MessageRepository messageRepository;
   private final UserRepository userRepository;
   private final UserMapper userMapper;
+  private final ChannelMapper channelMapper;
 
   @Override
   @Transactional
@@ -44,7 +43,7 @@ public class BasicChannelService implements ChannelService {
     Channel channel = new Channel(ChannelType.PUBLIC, name, description);
 
     Channel savedChannel = channelRepository.save(channel);
-    return toDto(savedChannel);
+    return channelMapper.toDto(savedChannel, userMapper);
   }
 
   @Override
@@ -61,14 +60,14 @@ public class BasicChannelService implements ChannelService {
       readStatusRepository.save(status);
     }
 
-    return toDto(createdChannel);
+    return channelMapper.toDto(createdChannel, userMapper);
   }
 
   @Override
   @Transactional
   public ChannelDto find(UUID channelId) {
     return channelRepository.findById(channelId)
-        .map(this::toDto)
+        .map(channel -> channelMapper.toDto(channel, userMapper))
         .orElseThrow(
             () -> new NoSuchElementException("Channel with id " + channelId + " not found"));
   }
@@ -77,21 +76,7 @@ public class BasicChannelService implements ChannelService {
   @Transactional(readOnly = true)
   public List<ChannelDto> findAllByUserId(UUID userId) {
     List<Channel> channels = channelRepository.findAllByUserIdWithParticipants(userId);
-
-    return channels.stream()
-        .map(channel -> new ChannelDto(
-            channel.getId(),
-            channel.getType(),
-            channel.getName(),
-            channel.getDescription(),
-            channel.getReadStatuses().stream()
-                .map(ReadStatus::getUser)
-                .distinct()
-                .map(userMapper::toDto)
-                .collect(Collectors.toList()),
-            null
-        ))
-        .collect(Collectors.toList());
+    return channelMapper.toDtoList(channels, userMapper);
   }
 
 
@@ -109,7 +94,7 @@ public class BasicChannelService implements ChannelService {
     channel.update(newName, newDescription);
 
     Channel updatedChannel = channelRepository.save(channel);
-    return toDto(updatedChannel);
+    return channelMapper.toDto(updatedChannel, userMapper);
   }
 
   @Override
@@ -124,36 +109,4 @@ public class BasicChannelService implements ChannelService {
 
     channelRepository.deleteById(channelId);
   }
-
-  private ChannelDto toDto(Channel channel) {
-    Instant lastMessageAt = channel.getMessages().stream()
-        .map(Message::getCreatedAt)
-        .max(Instant::compareTo)
-        .orElse(null);
-
-    List<UserDto> participants;
-    if (channel.getType().equals(ChannelType.PRIVATE)) {
-      participants = channel.getReadStatuses().stream()
-          .map(ReadStatus::getUser)
-          .distinct()
-          .map(userMapper::toDto)
-          .collect(Collectors.toList());
-    } else {
-      participants = channel.getMessages().stream()
-          .map(Message::getAuthor)
-          .distinct()
-          .map(userMapper::toDto)
-          .collect(Collectors.toList());
-    }
-
-    return new ChannelDto(
-        channel.getId(),
-        channel.getType(),
-        channel.getName(),
-        channel.getDescription(),
-        participants,
-        lastMessageAt
-    );
-  }
-
 }
