@@ -4,63 +4,45 @@ import com.sprint.mission.discodeit.dto.data.ChannelDto;
 import com.sprint.mission.discodeit.dto.data.UserDto;
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.entity.ChannelType;
-import com.sprint.mission.discodeit.entity.Message;
 import com.sprint.mission.discodeit.entity.ReadStatus;
-import com.sprint.mission.discodeit.entity.User;
-import org.mapstruct.*;
-
+import com.sprint.mission.discodeit.repository.MessageRepository;
+import com.sprint.mission.discodeit.repository.ReadStatusRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Mapper(componentModel = "spring", uses = {UserMapper.class})
-public interface ChannelMapper {
+public abstract class ChannelMapper {
 
-  @Mapping(target = "participants", expression = "java(getParticipants(channel, userMapper))")
-  @Mapping(target = "lastMessageAt", expression = "java(getLastMessageTime(channel))")
-  ChannelDto toDto(Channel channel, @Context UserMapper userMapper);
+  @Autowired
+  private MessageRepository messageRepository;
+  @Autowired
+  private ReadStatusRepository readStatusRepository;
+  @Autowired
+  private UserMapper userMapper;
 
-  default List<ChannelDto> toDtoList(List<Channel> channels, @Context UserMapper userMapper) {
-    if (channels == null) {
-      return null;
-    }
+  @Mapping(target = "participants", expression = "java(resolveParticipants(channel))")
+  @Mapping(target = "lastMessageAt", expression = "java(resolveLastMessageAt(channel))")
+  abstract public ChannelDto toDto(Channel channel);
 
-    return channels.stream()
-        .map(channel -> toDto(channel, userMapper))
-        .collect(Collectors.toList());
+  protected Instant resolveLastMessageAt(Channel channel) {
+    return messageRepository.findLastMessageAtByChannelId(
+            channel.getId())
+        .orElse(Instant.MIN);
   }
 
-  default List<UserDto> getParticipants(Channel channel, UserMapper userMapper) {
-    if (channel == null) {
-      return null;
-    }
-
-    List<User> users;
-    if (ChannelType.PRIVATE.equals(channel.getType())) {
-      users = channel.getReadStatuses().stream()
+  protected List<UserDto> resolveParticipants(Channel channel) {
+    List<UserDto> participants = new ArrayList<>();
+    if (channel.getType().equals(ChannelType.PRIVATE)) {
+      readStatusRepository.findAllByChannelIdWithUser(channel.getId())
+          .stream()
           .map(ReadStatus::getUser)
-          .distinct()
-          .collect(Collectors.toList());
-    } else {
-      users = channel.getMessages().stream()
-          .map(Message::getAuthor)
-          .distinct()
-          .collect(Collectors.toList());
+          .map(userMapper::toDto)
+          .forEach(participants::add);
     }
-
-    return users.stream()
-        .map(userMapper::toDto)
-        .collect(Collectors.toList());
-  }
-
-  default Instant getLastMessageTime(Channel channel) {
-    if (channel == null || channel.getMessages() == null || channel.getMessages().isEmpty()) {
-      return null;
-    }
-
-    return channel.getMessages().stream()
-        .map(Message::getCreatedAt)
-        .max(Instant::compareTo)
-        .orElse(null);
+    return participants;
   }
 }

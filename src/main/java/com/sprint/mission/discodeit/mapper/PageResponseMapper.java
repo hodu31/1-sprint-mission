@@ -2,19 +2,29 @@ package com.sprint.mission.discodeit.mapper;
 
 import com.sprint.mission.discodeit.dto.response.PageResponse;
 import org.mapstruct.Mapper;
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Slice;
 
 @Mapper(componentModel = "spring")
 public interface PageResponseMapper {
 
-  // 커서 기반 페이지네이션 데이터를 PageResponse로 변환
-  static <T> PageResponse<T> toCursorPageResponse(List<T> content, int size, boolean hasNext,
-      String nextCursor) {
-    PageResponse<T> response = new PageResponse<>();
-    response.setContent(content);
-    response.setSize(size);
-    response.setHasNext(hasNext);
-    response.setNextCursor(nextCursor);
-    return response;
+  default <T> PageResponse<T> fromSlice(Slice<T> slice, Object nextCursor) {
+    return new PageResponse<>(
+        slice.getContent(),
+        nextCursor,
+        slice.getSize(),
+        slice.hasNext(),
+        null
+    );
+  }
+
+  default <T> PageResponse<T> fromPage(Page<T> page, Object nextCursor) {
+    return new PageResponse<>(
+        page.getContent(),
+        nextCursor,
+        page.getSize(),
+        page.hasNext(),
+        page.getTotalElements()
+    );
   }
 }

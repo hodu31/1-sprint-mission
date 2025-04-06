@@ -4,24 +4,21 @@ import com.sprint.mission.discodeit.entity.base.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
 @Entity
 @Table(name = "binary_contents")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BinaryContent extends BaseEntity {
 
-  @Column(name = "file_name", nullable = false)
+  @Column(nullable = false)
   private String fileName;
-
-  @Column(name = "size")
+  @Column(nullable = false)
   private Long size;
-
-  @Column(name = "content_type")
+  @Column(length = 100, nullable = false)
   private String contentType;
 
   public BinaryContent(String fileName, Long size, String contentType) {
