@@ -46,7 +46,7 @@ info:
 
 discodeit:
   storage:
-    type: local
+    type: ${DISCODEIT_STORAGE_TYPE}
     local:
       root-path: ${discodeit.storage.local.root-path}
 
