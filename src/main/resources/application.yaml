@@ -13,7 +13,7 @@ spring:
     open-in-view: false
   profiles:
     active:
-      - dev
+      - ${SPRING_PROFILES_ACTIVE}
 
 management:
   endpoints:
@@ -48,7 +48,7 @@ discodeit:
   storage:
     type: local
     local:
-      root-path: .discodeit/storage
+      root-path: ${discodeit.storage.local.root-path}
 
 logging:
   level:
