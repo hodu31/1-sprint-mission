@@ -1,25 +1,31 @@
 # 1단계: 빌드용 이미지
 FROM gradle:8.6-jdk17-alpine AS builder
 
-# 작업 디렉토리 설정
 WORKDIR /app
 
-# 캐시 최적화를 위한 순차적 복사
-COPY build.gradle settings.gradle gradlew gradle/ ./
+# Gradle Wrapper 복사 (명시적으로)
+COPY gradlew ./gradlew
+COPY gradle/wrapper/gradle-wrapper.jar ./gradle/wrapper/gradle-wrapper.jar
+COPY gradle/wrapper/gradle-wrapper.properties ./gradle/wrapper/gradle-wrapper.properties
 
-# 의존성 캐시
-RUN ./gradlew --no-daemon build -x test || return 0
+# build 설정 복사
+COPY build.gradle settings.gradle ./
 
-# 소스 복사 후 빌드
+# 의존성 캐싱
+RUN ./gradlew dependencies --no-daemon || return 0
+
+# 전체 소스 복사
 COPY src ./src
-RUN ./gradlew --no-daemon clean build -x test
 
-# 2단계: 실행용 이미지 (더 작음)
+# 실제 빌드
+RUN ./gradlew clean build -x test --no-daemon
+
+# 2단계: 실행용 이미지 (경량)
 FROM amazoncorretto:17-alpine
 
 WORKDIR /app
 
-# 환경 변수
+# 환경 변수 설정
 ENV PROJECT_NAME=discodeit \
     PROJECT_VERSION=1.2-M8 \
     JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC"
@@ -27,7 +33,6 @@ ENV PROJECT_NAME=discodeit \
 # 빌드된 JAR만 복사
 COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar
 
-# 포트 노출
 EXPOSE 80
 
 # 애플리케이션 실행
