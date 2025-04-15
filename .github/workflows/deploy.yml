@@ -8,6 +8,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      DISCODEIT_STORAGE_ROOT_PATH: /tmp/discodeit/storage
+
     steps:
       - name: Github Repository 파일 불러오기
         uses: actions/checkout@v4
