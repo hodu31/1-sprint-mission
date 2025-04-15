@@ -44,16 +44,16 @@ jobs:
         run: docker push ${{ steps.login-ecr.outputs.registry }}/discodeit:latest
 
       - name: 압축하기
-        run: tar -czvf $GITHUB_SHA.tar.gz appspec.yml taskdef.json
+        run: zip -r $GITHUB_SHA.zip appspec.yml taskdef.json
 
       - name: S3에 프로젝트 폴더 업로드하기
-        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.tar.gz s3://discodeit-server-image/$GITHUB_SHA.tar.gz
+        run: aws s3 cp --region ap-northeast-2 ./$GITHUB_SHA.zip s3://discodeit-server-image/$GITHUB_SHA.zip
 
       - name: CodeDeploy를 통해 ECS에 배포 트리거
         run: |
             aws deploy create-deployment \
               --application-name discodeit-CodeDeploy \
               --deployment-group-name Production \
-              --s3-location bucket=discodeit-server-image,bundleType=tgz,key=${GITHUB_SHA}.tar.gz \
+              --s3-location bucket=discodeit-server-image,bundleType=zip,key=${GITHUB_SHA}.zip \
               --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
               --region ap-northeast-2
