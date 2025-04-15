@@ -51,7 +51,6 @@ bin/
 
 
 ### else ###
-application.yaml
 compose.yml
 .env
 discodeit.env

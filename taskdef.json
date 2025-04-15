@@ -1,0 +1,19 @@
+{
+  "family": "discodeit-task",
+  "networkMode": "bridge",
+  "containerDefinitions": [
+    {
+      "name": "app",
+      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/practice-server:latest",
+      "essential": true,
+      "memory": 512,
+      "cpu": 256,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 80
+        }
+      ]
+    }
+  ]
+}
