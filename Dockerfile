@@ -28,7 +28,7 @@ WORKDIR /app
 # 환경 변수 설정
 ENV PROJECT_NAME=discodeit \
     PROJECT_VERSION=1.2-M8 \
-    JVM_OPTS="-Xmx384m -Xms256m -XX:MaxMetaspaceSize=512m -XX:+UseSerialGC"
+    JVM_OPTS="-Xmx384m -Xms128m -XX:MaxMetaspaceSize=256m -XX:+UseSerialGC"
 
 # 빌드된 JAR만 복사
 COPY --from=builder /app/build/libs/${PROJECT_NAME}-${PROJECT_VERSION}.jar app.jar

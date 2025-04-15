@@ -6,8 +6,8 @@
       "name": "discodeit-app",
       "image": "490661626696.dkr.ecr.ap-northeast-2.amazonaws.com/discodeit:latest",
       "essential": true,
-      "memory": 512,
-      "cpu": 256,
+      "memory": 256,
+      "cpu": 128,
       "portMappings": [
         {
           "containerPort": 80,
