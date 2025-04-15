@@ -55,5 +55,5 @@ jobs:
               --application-name discodeit-CodeDeploy \
               --deployment-group-name Production \
               --s3-location bucket=discodeit-server-image,bundleType=tgz,key=${GITHUB_SHA}.tar.gz \
-              --deployment-config-name CodeDeployDefault.AllAtOnce \
+              --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
               --region ap-northeast-2
