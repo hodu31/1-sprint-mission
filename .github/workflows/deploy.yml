@@ -52,8 +52,8 @@ jobs:
       - name: CodeDeploy를 통해 ECS에 배포 트리거
         run: |
             aws deploy create-deployment \
-              --application-name discodeit-deploy-app \
-              --deployment-group-name discodeit-deploy-group \
+              --application-name discodeit-CodeDeploy \
+              --deployment-group-name Production \
               --s3-location bucket=discodeit-server-image,bundleType=tgz,key=${GITHUB_SHA}.tar.gz \
               --deployment-config-name CodeDeployDefault.ECSAllAtOnce \
               --region ap-northeast-2
