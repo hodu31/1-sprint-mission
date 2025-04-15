@@ -46,9 +46,9 @@ info:
 
 discodeit:
   storage:
-    type: ${DISCODEIT_STORAGE_TYPE}
+    type: ${DISCODEIT_STORAGE_TYPE:local}
     local:
-      root-path: ${discodeit.storage.local.root-path}
+      root-path: ${DISCODEIT_STORAGE_ROOT_PATH:/.discodeit/storage}
 
 logging:
   level:
