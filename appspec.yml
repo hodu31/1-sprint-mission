@@ -3,7 +3,7 @@ Resources:
   - TargetService:
       Type: AWS::ECS::Service
       Properties:
-        TaskDefinition: discodeit-task
+        TaskDefinition: discodeit-task:1
         LoadBalancerInfo:
-          ContainerName: app
+          ContainerName: discodeit-app
           ContainerPort: 80
