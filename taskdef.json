@@ -3,8 +3,8 @@
   "networkMode": "bridge",
   "containerDefinitions": [
     {
-      "name": "app",
-      "image": "<AWS_ACCOUNT_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/practice-server:latest",
+      "name": "discodeit-app",
+      "image": "490661626696.dkr.ecr.ap-northeast-2.amazonaws.com/discodeit:latest",
       "essential": true,
       "memory": 512,
       "cpu": 256,
