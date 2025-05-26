@@ -88,6 +88,16 @@ public class BasicUserService implements UserService {
   }
 
   @Override
+  public UserDto find(String username) {
+    log.debug("사용자 조회 시작: username={}", username);
+    UserDto userDto = userRepository.findByUsername(username)
+        .map(userMapper::toDto)
+        .orElseThrow(() -> UserNotFoundException.withUsername(username));
+    log.info("사용자 조회 완료: username={}", username);
+    return userDto;
+  }
+
+  @Override
   public List<UserDto> findAll() {
     log.debug("모든 사용자 조회 시작");
     List<UserDto> userDtos = userRepository.findAllWithProfileAndStatus()
