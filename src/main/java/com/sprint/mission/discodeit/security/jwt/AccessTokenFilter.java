@@ -26,24 +26,32 @@ public class AccessTokenFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    String token = request.getHeader("Authorization");
-    if (token != null && token.startsWith("Bearer ")) {
-      String jwt = token.substring(7);
-      if (jwtService.isValidRefreshToken(jwt)) {
-        Claims claims = Jwts.parserBuilder()
-            .setSigningKey(jwtService.getSecretKey())
-            .build()
-            .parseClaimsJws(jwt)
-            .getBody();
-        String username = ((Map<?, ?>) claims.get("userDto")).get("username").toString();
-        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_USER"));
-        Authentication auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-        SecurityContextHolder.getContext().setAuthentication(auth);
+
+    String header = request.getHeader("Authorization");
+    if (header != null && header.startsWith("Bearer ")) {
+      String jwt = header.substring(7);
+
+      // ✅ AccessToken인지 확인
+      if (jwtService.isValidAccessToken(jwt)) {
+        Claims claims = jwtService.parseClaims(jwt);
+        Map<String, Object> userDtoMap = claims.get("userDto", Map.class);
+
+        String username = (String) userDtoMap.get("username");
+        String role = (String) userDtoMap.get("role");
+
+        List<GrantedAuthority> authorities =
+            List.of(new SimpleGrantedAuthority("ROLE_" + role)); // 동적 권한 처리
+
+        UsernamePasswordAuthenticationToken authentication =
+            new UsernamePasswordAuthenticationToken(username, null, authorities);
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
       } else {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Access Token");
         return;
       }
     }
+
     filterChain.doFilter(request, response);
   }
 

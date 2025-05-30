@@ -86,19 +86,31 @@ public class JwtService {
 
   public boolean isValidRefreshToken(String token) {
     try {
-      Claims claims = Jwts.parserBuilder()
-          .setSigningKey(getSecretKey()) // 중요: 키 유효성 확인
-          .build()
-          .parseClaimsJws(token)
-          .getBody();
-
-      log.debug("refreshToken subject = {}", claims.getSubject());
+      Claims claims = parseClaims(token);
       return "refreshToken".equals(claims.getSubject());
     } catch (Exception e) {
-      log.warn("RefreshToken 파싱 실패: {}", e.getMessage(), e);
       return false;
     }
   }
+
+
+  public boolean isValidAccessToken(String token) {
+    try {
+      Claims claims = parseClaims(token);
+      return claims.getSubject().equals("accessToken");
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  public Claims parseClaims(String token) {
+    return Jwts.parserBuilder()
+        .setSigningKey(getSecretKey())
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+  }
+
 
   @Transactional
   public String refreshAccessToken(String refreshToken) {
