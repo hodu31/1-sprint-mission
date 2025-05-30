@@ -2,10 +2,11 @@ package com.sprint.mission.discodeit.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sprint.mission.discodeit.entity.Role;
+import com.sprint.mission.discodeit.mapper.UserMapper;
 import com.sprint.mission.discodeit.security.JsonUsernamePasswordAuthenticationFilter.Configurer;
 import com.sprint.mission.discodeit.security.SecurityMatchers;
-import com.sprint.mission.discodeit.security.jwt.JWTTokenGeneratorFilter;
-import com.sprint.mission.discodeit.security.jwt.JWTTokenValidatorFilter;
+import com.sprint.mission.discodeit.security.jwt.AccessTokenFilter;
+import com.sprint.mission.discodeit.security.jwt.JwtService;
 import java.util.List;
 import java.util.stream.IntStream;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -44,7 +46,9 @@ public class SecurityConfig {
   public SecurityFilterChain filterChain(
       HttpSecurity http,
       ObjectMapper objectMapper,
-      AuthenticationManager authenticationManager
+      AuthenticationManager authenticationManager,
+      JwtService jwtService,
+      UserMapper userMapper
   )
       throws Exception {
     http
@@ -53,24 +57,22 @@ public class SecurityConfig {
             .requestMatchers(
                 SecurityMatchers.NON_API,
                 SecurityMatchers.GET_CSRF_TOKEN,
-                SecurityMatchers.SIGN_UP
+                SecurityMatchers.SIGN_UP,
+                SecurityMatchers.LOGOUT,
+                SecurityMatchers.AUTHME,
+                SecurityMatchers.AUTH_REFRESH
             ).permitAll()
             .anyRequest().hasRole(Role.USER.name())
         )
         .csrf(csrf -> csrf
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler())
-            .ignoringRequestMatchers(SecurityMatchers.LOGOUT)
+            .ignoringRequestMatchers(SecurityMatchers.LOGIN, SecurityMatchers.LOGOUT, SecurityMatchers.AUTH_REFRESH)
         )
-        .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
-        .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
-        .logout(logout ->
-            logout
-                .logoutRequestMatcher(SecurityMatchers.LOGOUT)
-                .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler())
-        )
-        .with(new Configurer(objectMapper),
-            Customizer.withDefaults())
+
+        .addFilterBefore(new AccessTokenFilter(jwtService), BasicAuthenticationFilter.class)
+        .with(new Configurer(objectMapper, jwtService, userMapper), Customizer.withDefaults())
+
         .sessionManagement(session -> session
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // Stateless
         )
@@ -111,6 +113,11 @@ public class SecurityConfig {
   public AuthenticationManager authenticationManager(
       List<AuthenticationProvider> authenticationProviders) {
     return new ProviderManager(authenticationProviders);
+  }
+
+  @Bean
+  public SessionRegistry sessionRegistry() {
+    return new SessionRegistryImpl();
   }
 
   @Bean

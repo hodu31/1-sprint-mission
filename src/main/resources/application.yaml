@@ -73,4 +73,5 @@ security:
 
 jwt:
   secret-key: ${JWT_SECRET_KEY}
-  header: ${JWT_HEADER}
+  access-token-validity: 5m
+  refresh-token-validity: 7d

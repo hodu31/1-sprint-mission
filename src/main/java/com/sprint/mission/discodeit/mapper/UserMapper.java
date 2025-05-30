@@ -13,4 +13,6 @@ public interface UserMapper {
 
   @Mapping(target = "online", expression = "java(online)")
   UserDto toDto(User user, boolean online);
+
+  User toEntity(UserDto userDto);
 }

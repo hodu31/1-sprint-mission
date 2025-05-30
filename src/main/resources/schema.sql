@@ -2,15 +2,25 @@
 -- User
 CREATE TABLE users
 (
-    id         uuid PRIMARY KEY,
+    id uuid PRIMARY KEY,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone,
     username   varchar(50) UNIQUE       NOT NULL,
     email      varchar(100) UNIQUE      NOT NULL,
     password   varchar(60)              NOT NULL,
-    profile_id uuid,
-    role       varchar(20)              NOT NULL
+    profile_id uuid
 );
+
+CREATE TABLE jwt_sessions
+(
+    id uuid PRIMARY KEY,
+    user_id UUID NOT NULL,
+    refresh_token VARCHAR(1000),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE
+);
+
 
 -- BinaryContent
 CREATE TABLE binary_contents
@@ -23,6 +33,15 @@ CREATE TABLE binary_contents
 --     ,bytes        bytea        NOT NULL
 );
 
+-- UserStatus
+CREATE TABLE user_statuses
+(
+    id             uuid PRIMARY KEY,
+    created_at     timestamp with time zone NOT NULL,
+    updated_at     timestamp with time zone,
+    user_id        uuid UNIQUE              NOT NULL,
+    last_active_at timestamp with time zone NOT NULL
+);
 
 -- Channel
 CREATE TABLE channels
@@ -75,6 +94,13 @@ ALTER TABLE users
             REFERENCES binary_contents (id)
             ON DELETE SET NULL;
 
+-- UserStatus (1) -> User (1)
+ALTER TABLE user_statuses
+    ADD CONSTRAINT fk_user_status_user
+        FOREIGN KEY (user_id)
+            REFERENCES users (id)
+            ON DELETE CASCADE;
+
 -- Message (N) -> Channel (1)
 ALTER TABLE messages
     ADD CONSTRAINT fk_message_channel
@@ -110,10 +136,12 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
-create table persistent_logins
-(
-    username  varchar(64) not null,
-    series    varchar(64) primary key,
-    token     varchar(64) not null,
-    last_used timestamp   not null
-);
+ALTER TABLE users
+    ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'USER';
+
+
+ALTER TABLE jwt_sessions
+    ADD CONSTRAINT fk_jwt_session_user
+        FOREIGN KEY (user_id)
+            REFERENCES users (id)
+            ON DELETE CASCADE;

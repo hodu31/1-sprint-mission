@@ -1,5 +1,6 @@
-package com.sprint.mission.discodeit.entity;
+package com.sprint.mission.discodeit.security.jwt;
 
+import com.sprint.mission.discodeit.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,6 +12,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,21 +24,19 @@ import lombok.Setter;
 @Table(name = "jwt_sessions")
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class JwtSession {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  @GeneratedValue(strategy = GenerationType.UUID)
+  @Column(columnDefinition = "uuid", updatable = false, nullable = false)
+  private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
-
-  @Column(name = "access_token", length = 1000)
-  private String accessToken;
 
   @Column(name = "refresh_token", length = 1000)
   private String refreshToken;
@@ -48,12 +49,6 @@ public class JwtSession {
 
   @Column(name = "is_revoked", nullable = false)
   private boolean revoked;
-
-  @Column(name = "device_info", length = 255)
-  private String deviceInfo;
-
-  @Column(name = "ip_address", length = 50)
-  private String ipAddress;
 
   @PrePersist
   protected void onCreate() {
