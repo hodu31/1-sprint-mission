@@ -30,7 +30,7 @@ public class BasicNotificationService implements NotificationService {
   @Cacheable(value = "notifications", key = "#userId")
   @Transactional(readOnly = true)
   public List<NotificationDto> getNotificationsByUserId(UUID userId) {
-    return notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(userId)
+    return notificationRepository.findAllByReceiver_IdOrderByCreatedAtDesc(userId)
         .stream()
         .map(notificationMapper::toDto)
         .collect(Collectors.toList());
