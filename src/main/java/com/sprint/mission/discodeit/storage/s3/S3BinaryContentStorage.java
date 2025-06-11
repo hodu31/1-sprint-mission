@@ -1,18 +1,25 @@
 package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
+import com.sprint.mission.discodeit.entity.UploadStatus;
+import com.sprint.mission.discodeit.repository.BinaryContentRepository;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.Duration;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -31,6 +38,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequ
 @Component
 public class S3BinaryContentStorage implements BinaryContentStorage {
 
+  private final BinaryContentRepository binaryContentRepository;
   private final String accessKey;
   private final String secretKey;
   private final String region;
@@ -43,13 +51,16 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       @Value("${discodeit.storage.s3.access-key}") String accessKey,
       @Value("${discodeit.storage.s3.secret-key}") String secretKey,
       @Value("${discodeit.storage.s3.region}") String region,
-      @Value("${discodeit.storage.s3.bucket}") String bucket
+      @Value("${discodeit.storage.s3.bucket}") String bucket,
+      BinaryContentRepository binaryContentRepository
   ) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
     this.region = region;
     this.bucket = bucket;
+    this.binaryContentRepository = binaryContentRepository;
   }
+
 
   @Override
   public UUID put(UUID binaryContentId, byte[] bytes) {
@@ -65,12 +76,56 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       s3Client.putObject(request, RequestBody.fromBytes(bytes));
       log.info("S3에 파일 업로드 성공: {}", key);
 
+      binaryContentRepository.findById(binaryContentId).ifPresentOrElse(
+          binaryContent -> {
+            binaryContent.setUploadStatus(UploadStatus.SUCCESS);
+            binaryContentRepository.save(binaryContent);
+            log.info("BinaryContent 상태를 SUCCESS로 업데이트함: {}", binaryContentId);
+          },
+          () -> {
+            log.warn("BinaryContent 엔티티를 찾을 수 없어 상태를 업데이트하지 못함: {}", binaryContentId);
+          }
+      );
+
       return binaryContentId;
     } catch (S3Exception e) {
       log.error("S3에 파일 업로드 실패: {}", e.getMessage());
       throw new RuntimeException("S3에 파일 업로드 실패: " + key, e);
     }
   }
+
+  @Override
+  @Async
+  @Retryable(
+      value = {Exception.class},
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, multiplier = 2)
+  )
+  public CompletableFuture<Void> putAsync(UUID id, byte[] content) {
+    this.put(id, content);
+    return CompletableFuture.completedFuture(null);
+  }
+
+  @Recover
+  public CompletableFuture<Void> recover(Exception e, UUID id, byte[] content) {
+    String requestId = org.slf4j.MDC.get("requestId");
+    log.error("S3 업로드 최종 실패. fileId={}, requestId={}, error={}", id, requestId, e.getMessage(), e);
+
+    // BinaryContent 조회 및 상태 변경
+    binaryContentRepository.findById(id).ifPresentOrElse(
+        binaryContent -> {
+          binaryContent.setUploadStatus(UploadStatus.FAILED);
+          binaryContentRepository.save(binaryContent);
+          log.warn("BinaryContent 상태를 FAILED로 업데이트함: {}", id);
+        },
+        () -> {
+          log.error("BinaryContent 엔티티를 찾을 수 없습니다. fileId={}", id);
+        }
+    );
+
+    return CompletableFuture.completedFuture(null);
+  }
+
 
   @Override
   public InputStream get(UUID binaryContentId) {
