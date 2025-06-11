@@ -2,9 +2,11 @@ package com.sprint.mission.discodeit.storage.s3;
 
 import com.sprint.mission.discodeit.dto.data.BinaryContentDto;
 import com.sprint.mission.discodeit.entity.AsyncTaskFailure;
+import com.sprint.mission.discodeit.entity.NotificationType;
 import com.sprint.mission.discodeit.entity.UploadStatus;
 import com.sprint.mission.discodeit.repository.AsyncTaskFailureRepository;
 import com.sprint.mission.discodeit.repository.BinaryContentRepository;
+import com.sprint.mission.discodeit.service.NotificationService;
 import com.sprint.mission.discodeit.storage.BinaryContentStorage;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -13,6 +15,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +49,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
   private final String secretKey;
   private final String region;
   private final String bucket;
+  private final NotificationService notificationService;
 
   @Value("${discodeit.storage.s3.presigned-url-expiration:600}") // 기본값 10분
   private long presignedUrlExpirationSeconds;
@@ -56,7 +60,8 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
       @Value("${discodeit.storage.s3.region}") String region,
       @Value("${discodeit.storage.s3.bucket}") String bucket,
       BinaryContentRepository binaryContentRepository,
-      AsyncTaskFailureRepository asyncTaskFailureRepository
+      AsyncTaskFailureRepository asyncTaskFailureRepository,
+      NotificationService notificationService
   ) {
     this.accessKey = accessKey;
     this.secretKey = secretKey;
@@ -64,6 +69,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     this.bucket = bucket;
     this.binaryContentRepository = binaryContentRepository;
     this.asyncTaskFailureRepository = asyncTaskFailureRepository;
+    this.notificationService = notificationService;
   }
 
 
@@ -119,8 +125,11 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
 
   @Recover
   public CompletableFuture<Void> recover(Exception e, UUID id, byte[] content) {
-    String requestId = org.slf4j.MDC.get("requestId");
-    log.error("S3 업로드 최종 실패. fileId={}, requestId={}, error={}", id, requestId, e.getMessage(), e);
+    String requestId = MDC.get("requestId");
+    String userIdStr = MDC.get("userId");
+    UUID userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
+
+    log.error("S3 업로드 최종 실패. fileId={}, userId={}, requestId={}, error={}", id, userId, requestId, e.getMessage(), e);
 
     binaryContentRepository.findById(id).ifPresentOrElse(
         binaryContent -> {
@@ -131,6 +140,7 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
         () -> log.error("BinaryContent 엔티티를 찾을 수 없습니다. fileId={}", id)
     );
 
+    // 실패 로그 저장
     String reason = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
     String taskName = "S3BinaryContentStorage.putAsync";
 
@@ -142,8 +152,20 @@ public class S3BinaryContentStorage implements BinaryContentStorage {
     asyncTaskFailureRepository.save(failure);
     log.info("AsyncTaskFailure 기록 저장 완료. task={}, requestId={}", taskName, requestId);
 
+    if (userId != null) {
+      notificationService.publishNotificationEvent(
+          userId,
+          "파일 업로드 실패",
+          "파일 업로드 중 문제가 발생했습니다. 다시 시도해주세요.",
+          NotificationType.ASYNC_FAILED,
+          null
+      );
+      log.info("업로드 실패 알림 전송 완료. userId={}", userId);
+    }
+
     return CompletableFuture.completedFuture(null);
   }
+
 
 
 
