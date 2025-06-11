@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,7 @@ public class BasicNotificationService implements NotificationService {
   private final ApplicationEventPublisher eventPublisher;
 
   @Override
+  @Cacheable(value = "notifications", key = "#userId")
   @Transactional(readOnly = true)
   public List<NotificationDto> getNotificationsByUserId(UUID userId) {
     return notificationRepository.findAllByReceiverIdOrderByCreatedAtDesc(userId)
@@ -35,6 +38,7 @@ public class BasicNotificationService implements NotificationService {
 
   @Override
   @Transactional
+  @CacheEvict(value = "notifications", key = "#userId")
   public void deleteNotification(UUID notificationId, UUID userId) {
     var notification = notificationRepository.findById(notificationId)
         .orElseThrow(NotificationNotFoundException::new);
@@ -47,6 +51,7 @@ public class BasicNotificationService implements NotificationService {
   }
 
   @Override
+  @CacheEvict(value = "notifications", key = "#receiverId")
   public void publishNotificationEvent(UUID receiverId, String title, String content,
       NotificationType type, UUID targetId) {
     eventPublisher.publishEvent(new NotificationEvent(receiverId, title, content, type, targetId));
