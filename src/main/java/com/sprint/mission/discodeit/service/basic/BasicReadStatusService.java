@@ -19,8 +19,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -40,7 +38,6 @@ public class BasicReadStatusService implements ReadStatusService {
   @PreAuthorize("principal.userDto.id == #request.userId()")
   @Transactional
   @Override
-  @CacheEvict(value = "read-statuses", key = "#request.userId()")
   public ReadStatusDto create(ReadStatusCreateRequest request) {
     log.debug("읽음 상태 생성 시작: userId={}, channelId={}", request.userId(), request.channelId());
 
@@ -76,7 +73,6 @@ public class BasicReadStatusService implements ReadStatusService {
   }
 
   @Override
-  @Cacheable(value = "read-statuses", key = "#userId")
   public List<ReadStatusDto> findAllByUserId(UUID userId) {
     log.debug("사용자별 읽음 상태 목록 조회 시작: userId={}", userId);
     List<ReadStatusDto> dtos = readStatusRepository.findAllByUserId(userId).stream()
@@ -89,18 +85,16 @@ public class BasicReadStatusService implements ReadStatusService {
   @PostAuthorize("principal.userDto.id == returnObject.userId()")
   @Transactional
   @Override
-  @CacheEvict(value = "read-statuses", key = "#returnObject.userId()")
   public ReadStatusDto update(UUID readStatusId, ReadStatusUpdateRequest request) {
-    log.debug("읽음 상태 수정 시작: id={}, newLastReadAt={}", readStatusId, request.newLastReadAt());
+    log.debug("읽음 상태 수정 시작: id={}, newLastReadAt={}, notificationEnabled={}",
+        readStatusId, request.newLastReadAt(), request.newNotificationEnabled());
 
     ReadStatus readStatus = readStatusRepository.findById(readStatusId)
         .orElseThrow(() -> ReadStatusNotFoundException.withId(readStatusId));
-    readStatus.update(request.newLastReadAt());
-    if (request.notificationEnabled() != null) {
-      readStatus.updateNotificationEnabled(request.notificationEnabled());
-    }
+    readStatus.update(request.newLastReadAt(), request.newNotificationEnabled());
 
-    log.info("읽음 상태 수정 완료: id={}", readStatusId);
+    log.info("읽음 상태 수정 완료: id={}, notificationEnabled={}",
+        readStatusId, readStatus.isNotificationEnabled());
     return readStatusMapper.toDto(readStatus);
   }
 

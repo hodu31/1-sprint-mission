@@ -20,19 +20,8 @@ CREATE TABLE binary_contents
     file_name    varchar(255)             NOT NULL,
     size         bigint                   NOT NULL,
     content_type varchar(100)             NOT NULL,
-    upload_status varchar(20) NOT NULL DEFAULT 'WAITING'
---     ,bytes        bytea        NOT NULL
+    upload_status varchar(20)             NOT NULL
 );
-
-CREATE TABLE async_task_failures (
-     id             uuid PRIMARY KEY,
-     created_at     timestamp with time zone NOT NULL,
-     updated_at     timestamp with time zone,
-     task_name      varchar(255) NOT NULL,
-     request_id     varchar(255) NOT NULL,
-     failure_reason text         NOT NULL
-);
-
 
 
 -- Channel
@@ -74,21 +63,8 @@ CREATE TABLE read_statuses
     user_id      uuid                     NOT NULL,
     channel_id   uuid                     NOT NULL,
     last_read_at timestamp with time zone NOT NULL,
-    notification_enabled boolean DEFAULT true NOT NULL,
+    notification_enabled boolean NOT NULL,
     UNIQUE (user_id, channel_id)
-);
-
--- NOTIFICATIONS
-CREATE TABLE notifications (
-   id          uuid PRIMARY KEY,
-   created_at  timestamp with time zone NOT NULL,
-   updated_at  timestamp with time zone,
-   receiver_id uuid                     NOT NULL,
-   title       varchar(100)             NOT NULL,
-   content     text                     NOT NULL,
-   type        varchar(30)              NOT NULL,
-   target_id   uuid,
-   is_read     boolean                  NOT NULL DEFAULT false
 );
 
 
@@ -135,13 +111,6 @@ ALTER TABLE read_statuses
             REFERENCES channels (id)
             ON DELETE CASCADE;
 
--- notifications.receiver_id → users.id
-ALTER TABLE notifications
-    ADD CONSTRAINT fk_notification_user
-        FOREIGN KEY (receiver_id)
-            REFERENCES users (id)
-            ON DELETE CASCADE;
-
 CREATE TABLE persistent_logins
 (
     username  varchar(64) not null,
@@ -162,3 +131,25 @@ CREATE TABLE jwt_sessions
     expiration_time timestamp with time zone NOT NULL
 );
 
+CREATE TABLE async_task_failures
+(
+    id             uuid PRIMARY KEY,
+    created_at     timestamp with time zone NOT NULL,
+    updated_at     timestamp with time zone,
+    
+    task_name      varchar(255) NOT NULL,
+    request_id     varchar(255) NOT NULL, 
+    failure_reason text NOT NULL
+);
+
+CREATE TABLE notifications
+(
+    id uuid PRIMARY KEY,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone,
+    receiver_id uuid NOT NULL,
+    title varchar(255) NOT NULL,
+    content text NOT NULL,
+    type varchar(20) NOT NULL,
+    target_id uuid
+);

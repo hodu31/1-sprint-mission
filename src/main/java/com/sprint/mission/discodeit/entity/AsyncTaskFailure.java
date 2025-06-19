@@ -9,23 +9,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Getter
 @Table(name = "async_task_failures")
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AsyncTaskFailure extends BaseEntity {
 
-  @Column(nullable = false)
-  private String taskName;
+    @Column(nullable = false)
+    private String taskName;
 
-  @Column(nullable = false)
-  private String requestId;
+    @Column(nullable = false)
+    private String requestId;
 
-  @Column(nullable = false)
-  private String failureReason;
+    @Column(nullable = false, columnDefinition = "text")
+    private String failureReason;
 
-  public AsyncTaskFailure(String taskName, String requestId, String failureReason) {
-    this.taskName = taskName;
-    this.requestId = requestId;
-    this.failureReason = failureReason;
-  }
-}
+    public AsyncTaskFailure(String taskName, String requestId, String failureReason) {
+        this.taskName = taskName;
+        this.requestId = requestId;
+        this.failureReason = failureReason;
+    }
+} 
